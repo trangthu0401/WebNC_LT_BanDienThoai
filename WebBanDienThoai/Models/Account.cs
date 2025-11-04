@@ -1,23 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace WebBanDienThoai.Models;
-
-public partial class Account
+namespace WebBanDienThoai.Models
 {
-    public int AccountId { get; set; }
+    public class Account
+    {
+        [Key]
+        public int AccountID { get; set; }
 
-    public string Email { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
+        public string Email { get; set; }
 
-    public string Password { get; set; } = null!;
+        [Required]
+        [MaxLength(255)]
+        public string Password { get; set; }
 
-    public string Role { get; set; } = null!;
+        [Required]
+        [MaxLength(20)]
+        public string Role { get; set; } = "Customer";
 
-    public DateTime? CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    public bool? IsActive { get; set; }
-
-    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
-
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public bool IsActive { get; set; } = true;
+    }
 }

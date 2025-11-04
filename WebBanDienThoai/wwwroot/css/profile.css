@@ -1,0 +1,109 @@
+﻿/* Các style này chỉ áp dụng cho trang thông tin cá nhân */
+.profile-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    /* Đảm bảo font chữ được áp dụng */
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+    .profile-container h1 {
+        font-weight: 700;
+        color: #e63946;
+        margin-bottom: 25px;
+        font-family: 'Be Vietnam Pro', sans-serif; /* Áp dụng riêng cho H1 */
+    }
+
+/* Cấu hình CSS Grid */
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
+    gap: 20px 25px; /* Khoảng cách dọc, khoảng cách ngang */
+}
+
+    /* Class cho phép 1 phần tử chiếm trọn 2 cột */
+    .profile-form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Căn chỉnh nút bấm */
+    .profile-form-grid .form-actions {
+        display: flex;
+        justify-content: flex-end; /* Đẩy nút về bên phải */
+        margin-top: 10px;
+    }
+
+    /* Đường phân cách */
+    .profile-form-grid hr {
+        border: none;
+        border-top: 1px solid #eee;
+        margin: 5px 0;
+    }
+
+/* Tinh chỉnh Form */
+.profile-container .form-group {
+    margin-bottom: 0;
+}
+
+.profile-container label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.profile-container .form-control {
+    /* Quan trọng: Sửa lỗi chiều cao không đồng đều */
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    height: 44px;
+    padding: 10px 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    /* Đảm bảo font cho input */
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+    /* Hiệu ứng Focus */
+    .profile-container .form-control:focus {
+        border-color: #e63946;
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+        outline: none;
+    }
+
+    .profile-container .form-control[readonly] {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+        border-color: #ddd;
+    }
+
+.profile-container .btn-save-profile {
+    background-color: #e63946;
+    color: white;
+    font-weight: 700;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    /* Đảm bảo font cho nút */
+    font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+    .profile-container .btn-save-profile:hover {
+        background-color: #d62828;
+    }
+
+/* Thông báo thành công */
+.profile-container .alert-success {
+    padding: 15px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}

@@ -1,35 +1,38 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using WebBanDienThoai.Models;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore; // <-- Thêm EF Core
+using WebBanDienThoai.Data; // <-- Thêm namespace ch?a AppDbContext
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Đọc cấu hình từ appsettings.json
-var configuration = builder.Configuration;
+// --- 1. L?y chu?i k?t n?i ---
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Đăng ký ApplicationDbContext cho Identity
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+// --- 2. ??ng kư d?ch v? (Services) ---
 
-// Đăng ký Identity (nếu dùng đăng nhập, phân quyền)
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+// ??ng kư AppDbContext v?i SQL Server
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
-// Đăng ký DbContext chính cho dữ liệu sản phẩm, đơn hàng...
-builder.Services.AddDbContext<DemoWebBanDienThoaiContext>(options =>
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
-// Đăng ký MVC
+// ??ng kư d?ch v? cho Controllers và Views
 builder.Services.AddControllersWithViews();
 
+// ??ng k� d?ch v? Authentication (x�c th?c) b?ng Cookie
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // ???ng d?n ??n trang ??ng nh?p
+        options.AccessDeniedPath = "/Home/AccessDenied"; // (T�y ch?n) Trang t? ch?i
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+    });
+
+
+// --- 3. X�y d?ng ?ng d?ng (app) ---
 var app = builder.Build();
 
-// Middleware
+// --- 4. C?u h́nh HTTP request pipeline (Middleware) ---
+
+// C?u h́nh cho môi tr??ng development
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -37,16 +40,18 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // Cho ph�p d�ng file CSS, JS, Images...
 
-app.UseRouting();
+app.UseRouting(); // B?t t�nh n?ng ??nh tuy?n (Routing)
 
-app.UseAuthentication(); // Nếu dùng Identity
-app.UseAuthorization();
+// KÍCH HO?T XÁC TH?C VÀ PHÂN QUY?N
+// (Ph?i n?m gi?a UseRouting và MapControllerRoute)
+app.UseAuthentication(); // <-- Quan tr?ng: Xác th?c
+app.UseAuthorization(); // <-- Quan tr?ng: Phân quy?n
 
-// Route mặc định
+// C?u h́nh ??nh tuy?n m?c ??nh
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admin}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

@@ -1,0 +1,93 @@
+﻿@*
+    File: /Views/Shared/_Header.cshtml
+    (File này giữ nguyên, không cần sửa đổi)
+*@
+<header class="rabit-header">
+    <div class="header-top">
+        <div class="container-fluid header-top-container">
+
+            <a class="header-logo" asp-controller="Home" asp-action="Index">
+                <img src="~/images/Logo.png" alt="Rabit Store Logo" />
+            </a>
+
+            <form class="header-search" asp-controller="Product" asp-action="Search" method="get">
+                <input type="text" name="query" placeholder="Tìm kiếm..." />
+                <button type="submit" class="search-button">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+
+            <div class="header-actions">
+
+                <a class="btn-cart" asp-controller="Cart" asp-action="Index">
+                    <span>Giỏ hàng</span>
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </a>
+
+                <div class="user-dropdown">
+                    <button class="btn-user">
+                        <i class="fa-solid fa-user"></i>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <span class="user-email">@User.Identity.Name</span>
+                        }
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+
+                    <div class="user-dropdown-content">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Account" asp-action="Profile">
+                                <i class="fa-solid fa-id-card"></i> Tài khoản của tôi
+                            </a>
+                            <a asp-controller="Order" asp-action="History">
+                                <i class="fa-solid fa-box"></i> Đơn hàng
+                            </a>
+                            <hr />
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-logout">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login">
+                                <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+                            </a>
+                            <a asp-controller="Account" asp-action="Register">
+                                <i class="fa-solid fa-user-plus"></i> Đăng ký
+                            </a>
+                            <a asp-controller="Order" asp-action="History">
+                                <i class="fa-solid fa-box"></i> Đơn hàng
+                            </a>
+                            <hr />
+                            <button class="btn-logout" disabled style="opacity: 0.6;">
+                                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <nav class="header-nav">
+        <div class="container-fluid nav-container">
+            <ul class="nav-links">
+                <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a asp-controller="Product" asp-action="Wishlist">Yêu thích</a></li>
+                <li class="nav-dropdown">
+                    <a href="#">Danh mục <i class="fa-solid fa-chevron-down"></i></a>
+                    <ul class="nav-dropdown-content">
+                        <li><a href="#">Điện thoại</a></li>
+                        <li><a href="#">Ipad</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>

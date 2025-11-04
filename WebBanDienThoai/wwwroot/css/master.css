@@ -15,11 +15,12 @@ header {
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
-    position: fixed;
+    position: fixed; /* cố định trên cùng */
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
+    gap: 400px;
 }
 /* DẤU } THỪA ĐÃ BỊ XÓA Ở ĐÂY */
 
@@ -41,6 +42,7 @@ header {
     flex: 1; /* tự động chiếm hết phần còn lại */
     display: flex;
     align-items: center;
+    justify-content: space-between; /* tách hai bên */
     gap: 16px;
 }
 

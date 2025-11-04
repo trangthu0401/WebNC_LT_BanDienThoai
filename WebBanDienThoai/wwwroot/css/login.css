@@ -1,0 +1,167 @@
+﻿/* Thiết lập cơ bản và background */
+/* Code mới */
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Container chính bao bọc cả hai phần */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 100px; /* Khoảng cách giữa mascot và form */
+    padding: 20px;
+    max-width: 1100px;
+    width: 100%;
+}
+
+/* --- Phần thương hiệu (bên trái) --- */
+.brand-section {
+    text-align: center;
+    flex-basis: 40%;
+}
+
+    .brand-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #e63946; /* Màu đỏ cho chữ "Rabit Store" */
+        margin: 0;
+    }
+
+.mascot {
+    max-width: 300px; /* Điều chỉnh kích thước mascot */
+    height: auto;
+    margin-bottom: 20px;
+}
+
+
+/* --- Phần Form (bên phải) --- */
+.form-section {
+    flex-basis: 400px; /* Cố định chiều rộng của form */
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 16px; /* Bo góc như trong ảnh */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+    .form-section h2 {
+        text-align: left; /* Tiêu đề "Đăng Nhập" căn trái */
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 30px;
+    }
+
+/* Nhóm input (label + input) */
+.form-group {
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    box-sizing: border-box; /* Quan trọng để padding không làm vỡ layout */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+    .form-control:focus {
+        border-color: #e63946;
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        outline: none;
+    }
+
+/* Hàng chứa "Ghi nhớ" và "Quên mật khẩu" */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+}
+
+    .form-options a {
+        color: #007bff; /* Màu link xanh */
+        text-decoration: none;
+    }
+
+        .form-options a:hover {
+            text-decoration: underline;
+        }
+
+/* Tùy chỉnh checkbox */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-check-label {
+    margin-bottom: 0;
+    font-weight: 400;
+}
+
+.form-check-input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+/* Nút Đăng nhập */
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: #e63946; /* Màu đỏ của Rabit */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .btn-login:hover {
+        background-color: #d62828; /* Màu đỏ đậm hơn khi hover */
+    }
+
+/* Link đăng ký */
+.signup-link {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.9rem;
+}
+
+    .signup-link a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+/* CSS cho validation */
+.text-danger {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}

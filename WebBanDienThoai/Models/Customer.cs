@@ -1,33 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WebBanDienThoai.Models;
-
-public partial class Customer
+﻿namespace WebBanDienThoai.Models
 {
-    public int CustomerId { get; set; }
+    public class Customer
+    {
+        public int CustomerID { get; set; }
+        public int AccountID { get; set; }
+        public string FullName { get; set; }
+        public string? Phone { get; set; } // Dùng ? để cho phép NULL
+        public string Gender { get; set; }
+        public DateTime? BirthDate { get; set; } // Dùng ? để cho phép NULL
+        public string CustomerType { get; set; }
 
-    public int AccountId { get; set; }
-
-    public string FullName { get; set; } = null!;
-
-    public string? Phone { get; set; }
-
-    public string? Gender { get; set; }
-
-    public DateOnly? BirthDate { get; set; }
-
-    public string? CustomerType { get; set; }
-
-    public virtual Account Account { get; set; } = null!;
-
-    public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
-
-    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-
-    public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
-
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+        // (Tùy chọn) Thêm thuộc tính điều hướng để liên kết với Account
+        public virtual Account Account { get; set; }
+    }
 }

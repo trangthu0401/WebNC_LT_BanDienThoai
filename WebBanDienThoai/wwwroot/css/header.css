@@ -1,0 +1,269 @@
+﻿
+.container-fluid {
+    max-width: 1400px; 
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+
+.rabit-header {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #ffffff; 
+}
+
+.header-top {
+    padding: 15px 0;
+}
+
+.header-top-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.header-logo {
+    flex-shrink: 0; 
+}
+
+    .header-logo img {
+        height: 60px; 
+        width: auto;
+        display: block;
+    }
+
+
+.header-search {
+    flex-grow: 1; 
+    max-width: 400px;
+    position: relative;
+    display: flex;
+}
+
+    .header-search input[type="text"] {
+        box-sizing: border-box;
+        width: 100%;
+        height: 42px; 
+        padding: 10px 50px 10px 20px; 
+        border: 1px solid #ddd;
+        border-radius: 50px; 
+        font-size: 0.95rem; 
+        font-family: 'Be Vietnam Pro', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .header-search input[type="text"]:focus {
+            border-color: #e63946; 
+        }
+
+    .header-search .search-button {
+        position: absolute;
+        right: 4px; 
+        top: 4px; 
+        bottom: 4px; 
+        width: 34px; 
+        border: none;
+        background-color: #e63946; 
+        color: white;
+        border-radius: 50%; 
+        font-size: 0.9rem; 
+        cursor: pointer;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .header-search .search-button:hover {
+            background-color: #d62828; 
+        }
+
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+
+    .header-actions .btn-cart,
+    .header-actions .btn-user {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 42px; 
+        padding: 0 22px; 
+        border-radius: 50px; 
+        text-decoration: none;
+        font-size: 0.95rem; 
+        font-weight: 600; 
+        transition: all 0.2s;
+        border: 1px solid transparent; 
+    }
+
+        .header-actions .btn-cart i,
+        .header-actions .btn-user i {
+            font-size: 1.1rem;
+        }
+
+
+.btn-cart {
+    background-color: #e63946;
+    color: white;
+}
+
+    .btn-cart:hover {
+        background-color: #d62828;
+        color: white;
+    }
+
+
+.btn-user {
+    background-color: #f8f9fa; 
+    color: #333;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+    .btn-user:hover {
+        background-color: #e9ecef; 
+        color: #333;
+    }
+
+
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.user-dropdown-content {
+    display: none; 
+    position: absolute;
+    right: 0;
+    top: 110%; 
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    z-index: 1000;
+    padding: 10px;
+}
+
+    .user-dropdown-content a,
+    .user-dropdown-content .btn-logout {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #333;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        border-radius: 5px;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        font-weight: 500;
+    }
+
+        .user-dropdown-content a:hover,
+        .user-dropdown-content .btn-logout:hover {
+            background-color: #f8f9fa;
+            color: #e63946;
+        }
+
+    .user-dropdown-content hr {
+        margin: 8px 0;
+        border: none;
+        border-top: 1px solid #eee;
+    }
+
+    .user-dropdown-content .btn-logout {
+        color: #e63946; 
+        font-weight: 700;
+    }
+
+
+.header-nav {
+    background-color: #e63946; 
+    padding: 5px 0;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: flex-start; 
+    align-items: center;
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+}
+
+    .nav-links li {
+        position: relative;
+    }
+
+        .nav-links li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            border-radius: 5px;
+        }
+
+            .nav-links li a:hover {
+                background-color: rgba(0,0,0,0.1);
+            }
+
+            .nav-links li a i {
+                font-size: 0.8rem;
+                margin-left: 5px;
+            }
+
+
+.nav-dropdown-content {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 0 0 8px 8px;
+    z-index: 1000;
+    list-style: none;
+    padding: 10px;
+}
+
+.nav-dropdown:hover .nav-dropdown-content {
+    display: block;
+}
+
+.nav-dropdown-content li a {
+    color: #333; 
+    padding: 10px 15px;
+    font-size: 0.95rem;
+}
+
+    .nav-dropdown-content li a:hover {
+        background-color: #f8f9fa;
+        color: #e63946; 
+    }
+
+
+.user-dropdown-content.is-active {
+    display: block;
+}
