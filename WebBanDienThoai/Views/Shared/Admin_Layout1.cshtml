@@ -1,5 +1,5 @@
 ﻿@{
-    Layout = null; // Đây là layout gốc, không lồng layout khác
+    Layout = null;
     string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 }
@@ -12,54 +12,62 @@
     <title>@ViewData["Title"] - Rabit Store</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-
     <link href="~/css/master.css" rel="stylesheet" />
 
-    @* ========================================================== *@
-    @* === 1. PHẦN CSS THÊM VÀO (ĐỂ TÙY CHỈNH DROPDOWN) === *@
-    @* ========================================================== *@
     <style>
         .header-icons .dropdown-toggle {
             cursor: pointer;
-            width: 40px; /* Kích thước avatar */
+            width: 40px;
             height: 40px;
-            border-radius: 50%; /* Đảm bảo hình tròn */
+            border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #f0f0f0; /* Thêm viền nhẹ cho avatar */
+            border: 2px solid #f0f0f0;
         }
 
-        /* Ẩn mũi tên (caret) mặc định của Bootstrap dropdown */
-        .header-icons .dropdown-toggle::after {
-            display: none;
-        }
+            .header-icons .dropdown-toggle::after {
+                display: none;
+            }
 
-        /* Định dạng hộp thoại dropdown */
         .header-icons .dropdown-menu {
-            /* Dịch chuyển hộp thoại cho khớp */
             margin-top: 10px !important;
             border: 1px solid #eee;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            min-width: 220px; /* Đặt chiều rộng tối thiểu cho hộp thoại */
+            min-width: 220px;
         }
 
-        /* Căn chỉnh icon trong dropdown */
         .header-icons .dropdown-item i {
-            width: 20px; /* Giữ icon căn đều */
+            width: 20px;
             text-align: center;
         }
 
-        /* Định dạng item Đăng xuất màu đỏ (THEO YÊU CẦU) */
         .header-icons .dropdown-item-danger {
-            color: #dc3545; /* Màu đỏ của Bootstrap */
+            color: #dc3545;
             font-weight: 500;
         }
-        .header-icons .dropdown-item-danger:hover,
-        .header-icons .dropdown-item-danger:focus {
-            color: #fff;
-            background-color: #dc3545;
+
+            .header-icons .dropdown-item-danger:hover,
+            .header-icons .dropdown-item-danger:focus {
+                color: #fff;
+                background-color: #dc3545;
+            }
+
+        /* === THÊM MỚI: Style cho form logout === */
+        /* Đảm bảo form không có lề và nút bấm bên trong trông giống link */
+        .form-logout {
+            margin-bottom: 0; /* Bỏ lề mặc định của form */
         }
+
+            .form-logout .btn-logout {
+                /* Biến nút bấm thành giống hệt dropdown-item */
+                border: none;
+                background: none;
+                padding: 0; /* Bỏ padding mặc định của nút */
+                width: 100%; /* Chiếm toàn bộ chiều rộng của <li> */
+                text-align: left; /* Căn chữ về bên trái */
+                /* Dòng này lấy style từ Bootstrap */
+                padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x);
+            }
     </style>
 </head>
 <body>
@@ -68,26 +76,19 @@
         <div class="header-left">
             <img src="~/Images/Admin/logo.png" alt="Rabit Store Logo" class="logo" />
         </div>
-
         <div class="header-right">
             <div class="header-search">
                 <input type="text" placeholder="Tìm kiếm..." />
             </div>
-
-            @* ========================================================== *@
-            @* === 2. PHẦN HTML ĐÃ SỬA (SỬ DỤNG BOOTSTRAP DROPDOWN) === *@
-            @* ========================================================== *@
             <div class="header-icons">
                 <i class="fa-regular fa-bell"></i>
                 <i class="fa-solid fa-gear"></i>
-
                 <div class="dropdown">
                     <img src="https://i.pravatar.cc/100"
                          alt="avatar"
                          class="dropdown-toggle"
                          data-bs-toggle="dropdown"
                          aria-expanded="false" />
-
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><h6 class="dropdown-header">Chào, Admin!</h6></li>
                         <li>
@@ -97,18 +98,24 @@
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
+
+                        @* =============================================== *@
+                        @* === SỬA LỖI ĐĂNG XUẤT TẠI ĐÂY === *@
+                        @* (Thay thế <a> bằng <form> và <button>) *@
                         <li>
-                            <a class="dropdown-item dropdown-item-danger" href="#">
-                                <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>
-                                Đăng xuất
-                            </a>
+                            <form class="form-logout" asp-controller="Account" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item dropdown-item-danger btn-logout">
+                                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>
+                                    Đăng xuất
+                                </button>
+                            </form>
                         </li>
+                        @* =============================================== *@
+
                     </ul>
                 </div>
             </div>
-            @* ========================================================== *@
-            @* === KẾT THÚC PHẦN SỬA === *@
-            @* ========================================================== *@
         </div>
     </header>
 
@@ -134,9 +141,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    @* === ĐÂY LÀ DÒNG CODE ĐỂ SỬA LỖI === *@
-    @* Nó tạo ra một "chỗ giữ" cho các script từ trang con (như validation) *@
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>

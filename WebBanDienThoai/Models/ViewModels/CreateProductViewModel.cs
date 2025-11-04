@@ -1,53 +1,41 @@
-﻿// Thêm các using này vào đầu file
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using WebBanDienThoai.Models;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using WebBanDienThoai.Models; // Giả sử Model 'Product' nằm ở đây
 
+// === SỬA LỖI NAMESPACE TẠI ĐÂY ===
+// Đảm bảo nó khớp với @model trong View
 namespace WebBanDienThoai.Models.ViewModels
 {
     public class CreateProductViewModel
     {
-        // 1. Dùng để binding với các thông tin chung của sản phẩm
-        public Product Product { get; set; }
+        // Sửa lỗi Non-nullable: Gán giá trị mặc định
+        public Product Product { get; set; } = new Product();
 
-        // 2. Dùng để hiển thị danh sách hãng cho dropdown
-        public IEnumerable<SelectListItem> BrandList { get; set; }
+        public IEnumerable<SelectListItem> BrandList { get; set; } = new List<SelectListItem>();
 
-        // 3. Thông tin cho biến thể ĐẦU TIÊN
-        // Chúng ta đưa các trường này ra ngoài vì Product model không chứa chúng
+        [Display(Name = "Ảnh chính của sản phẩm")]
+        // Sửa lỗi Non-nullable: Thêm '?' để cho phép null
+        public IFormFile? MainImageFile { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập Màu sắc")]
-        public string VariantColor { get; set; }
+        // Biến thể đầu tiên
+        [Required]
+        // Sửa lỗi Non-nullable: Gán giá trị mặc định
+        public string VariantColor { get; set; } = string.Empty;
+        [Required]
+        // Sửa lỗi Non-nullable: Gán giá trị mặc định
+        public string VariantStorage { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng nhập Dung lượng")]
-        public string VariantStorage { get; set; }
+        // Sửa lỗi Non-nullable: Thêm '?' để cho phép null
+        public string? VariantRam { get; set; }
 
-        public string VariantRam { get; set; }
-
-        [Required(ErrorMessage = "Vui lòng nhập Giá bán")]
-        [Range(1000, double.MaxValue, ErrorMessage = "Giá bán phải lớn hơn 0")]
+        [Required]
         public decimal VariantPrice { get; set; }
-
-        [Required(ErrorMessage = "Vui lòng nhập Tồn kho")]
-        [Range(0, int.MaxValue, ErrorMessage = "Tồn kho không được âm")]
+        [Required]
         public int VariantStock { get; set; }
 
-
-        // 4. Các file được tải lên từ form
-
-        // Ảnh đại diện cho Product
-        public IFormFile MainImageFile { get; set; }
-
-        // Ảnh riêng cho biến thể (nếu có)
-        public IFormFile VariantImageFile { get; set; }
-
-        // Constructor để khởi tạo, tránh lỗi null
-        public CreateProductViewModel()
-        {
-            Product = new Product();
-            BrandList = new List<SelectListItem>();
-        }
+        [Display(Name = "Ảnh riêng của biến thể (nếu có)")]
+        // Sửa lỗi Non-nullable: Thêm '?' để cho phép null
+        public IFormFile? VariantImageFile { get; set; }
     }
 }

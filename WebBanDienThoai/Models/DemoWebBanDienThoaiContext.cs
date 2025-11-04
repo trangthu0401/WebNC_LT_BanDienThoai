@@ -55,13 +55,13 @@ public partial class DemoWebBanDienThoaiContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.AccountId).HasName("PK__ACCOUNT__349DA5868223B014");
+            entity.HasKey(e => e.AccountID).HasName("PK__ACCOUNT__349DA5868223B014");
 
             entity.ToTable("ACCOUNT");
 
             entity.HasIndex(e => e.Email, "UQ__ACCOUNT__A9D105345A405B4E").IsUnique();
 
-            entity.Property(e => e.AccountId).HasColumnName("AccountID");
+            entity.Property(e => e.AccountID).HasColumnName("AccountID");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -121,12 +121,12 @@ public partial class DemoWebBanDienThoaiContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK__CUSTOMER__A4AE64B8B3F06820");
+            entity.HasKey(e => e.CustomerID).HasName("PK__CUSTOMER__A4AE64B8B3F06820");
 
             entity.ToTable("CUSTOMER");
 
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-            entity.Property(e => e.AccountId).HasColumnName("AccountID");
+            entity.Property(e => e.CustomerID).HasColumnName("CustomerID");
+            entity.Property(e => e.AccountID).HasColumnName("AccountID");
             entity.Property(e => e.CustomerType)
                 .HasMaxLength(20)
                 .HasDefaultValue("Thường");
@@ -137,7 +137,7 @@ public partial class DemoWebBanDienThoaiContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(15);
 
             entity.HasOne(d => d.Account).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.AccountId)
+                .HasForeignKey(d => d.AccountID)
                 .HasConstraintName("FK__CUSTOMER__Accoun__4222D4EF");
         });
 

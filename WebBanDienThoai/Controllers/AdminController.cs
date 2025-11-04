@@ -10,10 +10,12 @@ using WebBanDienThoai.Models.ViewModels; // Namespace ViewModels của bạn
 using Microsoft.AspNetCore.Hosting; // Cần thiết cho việc lấy đường dẫn wwwroot
 using System.IO;                    // Cần thiết cho việc xử lý file (Path, FileStream)
 using Microsoft.AspNetCore.Mvc.Rendering; // Cần thiết cho SelectListItem (dropdown)
-using Microsoft.AspNetCore.Http; // Cần thiết cho IFormFile
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization; // Cần thiết cho IFormFile
 
 namespace WebBanDienThoai.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly DemoWebBanDienThoaiContext _context;
