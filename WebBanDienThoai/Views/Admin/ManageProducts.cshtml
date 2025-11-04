@@ -96,10 +96,10 @@
                                 </div>
                             </td>
 
-                            @* 2. Cột Giá *@
+                            @* 2. Cột Giá (Hiển thị LowestPrice) *@
                             <td>@String.Format("{0:N0}", item.LowestPrice) vnd</td>
 
-                            @* 3. Cột Số lượng *@
+                            @* 3. Cột Số lượng (Hiển thị TotalStock) *@
                             <td>@item.TotalStock</td>
 
                             @* 4. Cột Hãng *@
@@ -137,8 +137,11 @@
                                             data-name="@item.Name"
                                             data-isactive="@item.IsActive.ToString()"
                                             data-brandid="@item.BrandId"
-                                            data-price="@item.LowestPrice.ToString("F0")"
-                                            data-stock="@item.TotalStock"
+                                            @* =============================================== *@
+                                            @* === SỬA LỖI LOGIC TẠI ĐÂY === *@
+                                            data-price="@item.FirstVariantPrice.ToString("F0")"
+                                            data-stock="@item.FirstVariantStock"
+                                            @* =============================================== *@
                                             title="Sửa nhanh">
                                         <img src="/images/Admin/Product/edit.png" alt="Edit">
                                     </button>
@@ -194,21 +197,17 @@
             </div>
 
             @* --- BẮT ĐẦU FORM SỬA NHANH --- *@
-            @* Các thuộc tính "name" RẤT QUAN TRỌNG, phải khớp với tham số Controller *@
             <form id="quickEditForm" method="post" asp-action="QuickEditProduct" asp-controller="Admin">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
 
-                    @* Input ẩn chứa ID *@
                     <input type="hidden" id="edit-product-id" name="productId" />
 
-                    @* Tên sản phẩm *@
                     <div class="mb-3">
                         <label for="edit-name" class="form-label">Tên sản phẩm</label>
                         <input type="text" class="form-control" id="edit-name" name="name" required>
                     </div>
 
-                    @* Hãng *@
                     <div class="mb-3">
                         <label for="edit-brand" class="form-label">Hãng</label>
                         <select class="form-select" id="edit-brand" name="brandId" required>
@@ -219,7 +218,6 @@
                         </select>
                     </div>
 
-                    @* Trạng thái (isActive) - Cần 2 input để binding bool *@
                     <div class="mb-3 form-check">
                         <input type="hidden" name="isActive" value="false" />
                         <input type="checkbox" class="form-check-input" id="edit-is-active" name="isActive" value="true">
@@ -234,7 +232,6 @@
                     </div>
 
                     <div class="row">
-                        @* Giá (lowestPrice) *@
                         <div class="col-md-6 mb-3">
                             <label for="edit-price" class="form-label">Giá (vnd)</label>
                             <input type="number" step="1" min="0" class="form-control"
@@ -243,7 +240,6 @@
                                    required>
                         </div>
 
-                        @* Số lượng (totalStock) *@
                         <div class="col-md-6 mb-3">
                             <label for="edit-stock" class="form-label">Số lượng hiện có</label>
                             <input type="number" min="0" class="form-control"
@@ -288,18 +284,16 @@
                 var productId = button.getAttribute('data-id');
                 var productName = button.getAttribute('data-name');
                 var brandId = button.getAttribute('data-brandid');
-
-                // Chuyển string "True" (từ C#) thành boolean true (cho JS)
                 var isActive = button.getAttribute('data-isactive') === 'True';
 
-                var lowestPriceString = button.getAttribute('data-price'); // "500000"
-                var totalStock = button.getAttribute('data-stock');
+                // Dữ liệu này (price/stock) giờ đã ĐÚNG (FirstVariantPrice/FirstVariantStock)
+                var priceString = button.getAttribute('data-price');
+                var stockString = button.getAttribute('data-stock');
 
-                // Làm sạch giá (loại bỏ mọi dấu chấm/phẩy nếu có)
-                var cleanPriceString = lowestPriceString ? lowestPriceString.replace(/,/g, '').replace(/\./g, '') : '0';
-
-                // === ĐÃ SỬA LỖI TYPO TẠI ĐÂY ===
-                var lowestPrice = parseInt(cleanPriceString); // Xóa chữ 'a' thừa
+                // Làm sạch giá
+                var cleanPriceString = priceString ? priceString.replace(/,/g, '').replace(/\./g, '') : '0';
+                var price = parseInt(cleanPriceString);
+                var stock = parseInt(stockString) || 0; // Chuyển stock thành số
 
                 // Lấy các element bên trong form Modal
                 var modalTitle = editProductModal.querySelector('.modal-title');
@@ -316,13 +310,11 @@
                 modalProductId.value = productId;
                 modalProductName.value = productName;
                 modalBrand.value = brandId;
-
-                // Gán trạng thái (boolean) cho checkbox
                 modalIsActive.checked = isActive;
 
-                // Gán giá/số lượng
-                editPrice.value = lowestPrice;
-                editStock.value = totalStock;
+                // Gán giá/số lượng ĐÚNG
+                editPrice.value = price;
+                editStock.value = stock;
 
                 // Cập nhật đường link Chi tiết Biến thể
                 if (detailsLink) {

@@ -16,6 +16,51 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
     <link href="~/css/master.css" rel="stylesheet" />
+
+    @* ========================================================== *@
+    @* === 1. PHẦN CSS THÊM VÀO (ĐỂ TÙY CHỈNH DROPDOWN) === *@
+    @* ========================================================== *@
+    <style>
+        .header-icons .dropdown-toggle {
+            cursor: pointer;
+            width: 40px; /* Kích thước avatar */
+            height: 40px;
+            border-radius: 50%; /* Đảm bảo hình tròn */
+            object-fit: cover;
+            border: 2px solid #f0f0f0; /* Thêm viền nhẹ cho avatar */
+        }
+
+        /* Ẩn mũi tên (caret) mặc định của Bootstrap dropdown */
+        .header-icons .dropdown-toggle::after {
+            display: none;
+        }
+
+        /* Định dạng hộp thoại dropdown */
+        .header-icons .dropdown-menu {
+            /* Dịch chuyển hộp thoại cho khớp */
+            margin-top: 10px !important;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 220px; /* Đặt chiều rộng tối thiểu cho hộp thoại */
+        }
+
+        /* Căn chỉnh icon trong dropdown */
+        .header-icons .dropdown-item i {
+            width: 20px; /* Giữ icon căn đều */
+            text-align: center;
+        }
+
+        /* Định dạng item Đăng xuất màu đỏ (THEO YÊU CẦU) */
+        .header-icons .dropdown-item-danger {
+            color: #dc3545; /* Màu đỏ của Bootstrap */
+            font-weight: 500;
+        }
+        .header-icons .dropdown-item-danger:hover,
+        .header-icons .dropdown-item-danger:focus {
+            color: #fff;
+            background-color: #dc3545;
+        }
+    </style>
 </head>
 <body>
 
@@ -29,11 +74,41 @@
                 <input type="text" placeholder="Tìm kiếm..." />
             </div>
 
+            @* ========================================================== *@
+            @* === 2. PHẦN HTML ĐÃ SỬA (SỬ DỤNG BOOTSTRAP DROPDOWN) === *@
+            @* ========================================================== *@
             <div class="header-icons">
                 <i class="fa-regular fa-bell"></i>
                 <i class="fa-solid fa-gear"></i>
-                <img src="https://i.pravatar.cc/100" alt="avatar" />
+
+                <div class="dropdown">
+                    <img src="https://i.pravatar.cc/100"
+                         alt="avatar"
+                         class="dropdown-toggle"
+                         data-bs-toggle="dropdown"
+                         aria-expanded="false" />
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">Chào, Admin!</h6></li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-user-circle me-2"></i>
+                                Thông tin cá nhân
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item dropdown-item-danger" href="#">
+                                <i class="fa-solid fa-arrow-right-from-bracket me-2"></i>
+                                Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
+            @* ========================================================== *@
+            @* === KẾT THÚC PHẦN SỬA === *@
+            @* ========================================================== *@
         </div>
     </header>
 
@@ -42,7 +117,7 @@
             <a href="/Admin/Index" class="@(currentController == "Admin" && currentAction == "Index" ? "active" : "")">
                 <i class="fa-solid fa-chart-line"></i> Tổng quan
             </a>
-            <a href="/Admin/ManageProducts" class="@(currentController == "Admin" && currentAction == "ManageProducts" ? "active" : "")">
+            <a href="/Admin/ManageProducts" class="@(currentController == "Admin" && (currentAction == "ManageProducts" || currentAction == "ProductDetails") ? "active" : "")">
                 <i class="fa-solid fa-box"></i> Sản phẩm
             </a>
             <a href="/Admin/ManageCustomers" class="@(currentController == "Admin" && currentAction == "ManageCustomers" ? "active" : "")">
