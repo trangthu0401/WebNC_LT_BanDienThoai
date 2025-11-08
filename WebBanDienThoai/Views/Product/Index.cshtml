@@ -1,0 +1,274 @@
+﻿@model WebBanDienThoai.Models.ViewModels.ProductIndexViewModel
+
+@{
+    Layout = "~/Views/Shared/Admin_Layout1.cshtml";
+    ViewData["Title"] = "Quản lý Sản phẩm";
+    var currentBrandIdStr = ViewContext.RouteData.Values["brandId"]?.ToString();
+}
+<link href="~/css/Dashboard.css" rel="stylesheet">
+
+<div class="products-container">
+
+    @* --- HEADER (TÌM KIẾM, LỌC, THÊM MỚI) --- *@
+    <div class="products-header">
+
+        <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
+        <form class="product-search-form" method="get" asp-action="Index" asp-controller="Product">
+            @if (!string.IsNullOrEmpty(currentBrandIdStr))
+            {
+                <input type="hidden" name="brandId" value="@currentBrandIdStr" />
+            }
+            <input type="text" id="searchId" name="searchId" value="@ViewBag.SearchId" placeholder="Tìm kiếm...">
+            <button type="submit" class="btn-search-submit">
+                <img src="/images/Admin/Product/search_black.png" alt="Search Icon">
+            </button>
+        </form>
+
+        <div class="products-actions">
+            <button class="btn btn-secondary">
+                <span>Lọc</span>
+                <img src="/images/Admin/Product/admin_filter.png" alt="Filter Icon">
+            </button>
+
+            <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
+            <a asp-action="Create" asp-controller="Product" class="btn btn-primary">
+                <span>Thêm</span>
+                <img src="/images/Admin/Product/admin_add.png" alt="Add Icon">
+            </a>
+        </div>
+    </div>
+
+    @* --- THANH LỌC THEO HÃNG --- *@
+    <nav class="nav nav-pills nav-fill nav-container mb-3">
+
+        <!-- GHI CHÚ: Đã sửa controller="Product" -->
+        <a class="nav-link @(string.IsNullOrEmpty(currentBrandIdStr) ? "active" : "")"
+           aria-current="page"
+           href="@Url.Action("Index", "Product")">
+            Tất cả (@Model.TotalProductCount)
+        </a>
+
+        @foreach (var brand in Model.BrandCounts)
+        {
+            <!-- GHI CHÚ: Đã sửa controller="Product" -->
+            <a class="nav-link @(currentBrandIdStr == brand.brandId.ToString() ? "active" : "")"
+               href="@Url.Action("Index", "Product", new { brandId = brand.brandId, searchId = ViewBag.SearchId })">
+                @brand.BrandName (@brand.Count)
+            </a>
+        }
+    </nav>
+
+    @* --- THÔNG BÁO (STATUS MESSAGE) --- *@
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["StatusMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* --- BẢNG HIỂN THỊ SẢN PHẨM --- *@
+    <div class="table-responsive">
+        <table class="table table-hover align-middle product-table-standard">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 35%;">Sản phẩm</th>
+                    <th scope="col" style="width: 15%;">Giá</th>
+                    <th scope="col" style="width: 10%;">Số lượng</th>
+                    <th scope="col" style="width: 10%;">Hãng</th>
+                    <th scope="col" style="width: 10%;">Ngày nhập</th>
+                    <th scope="col" style="width: 10%;">Trạng thái</th>
+                    <th scope="col" style="width: 10%;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Products != null && Model.Products.Any())
+                {
+                    @foreach (var item in Model.Products)
+                    {
+                        <tr>
+                            @* 1. Cột Sản phẩm *@
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @{
+                                        string imageUrl = "/images/placeholder.png";
+                                        if (!string.IsNullOrEmpty(item.MainImage))
+                                        {
+                                            imageUrl = item.MainImage.StartsWith("/")
+                                            ? item.MainImage : "/" + item.MainImage;
+                                        }
+                                    }
+                                    <div class="product-image me-3">
+                                        <img src="@imageUrl" alt="@item.Name" />
+                                    </div>
+                                    <div class="product-text">
+                                        <span class="product-id">ID: @item.ProductId</span>
+                                        <span class="product-name">@item.Name</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            @* 2. Cột Giá *@
+                            <td>@String.Format("{0:N0}", item.LowestPrice) vnd</td>
+                            @* 3. Cột Số lượng *@
+                            <td>@item.TotalStock</td>
+                            @* 4. Cột Hãng *@
+                            <td>@item.BrandName</td>
+                            @* 5. Cột Ngày nhập *@
+                            <td>
+                                @item.CreatedDate.ToString("dd/MM/yy") <br />
+                                <small>@item.CreatedDate.ToString("h:mm tt")</small>
+                            </td>
+                            @* 6. Cột Trạng thái *@
+                            <td>
+                                @{
+                                    string statusClass = item.IsActive ? "available" : "hidden";
+                                    string statusText = item.IsActive ? "Đang bán" : "Đã ẩn";
+                                }
+                                <span class="status-chip @statusClass">@statusText</span>
+                            </td>
+                            @* 7. Cột Hành động (CRUD) *@
+                            <td>
+                                <div class="crud">
+                                    <!-- GHI CHÚ: Đã sửa controller="ProductVariant" -->
+                                    <a href="@Url.Action("Index", "ProductVariant", new { productId = item.ProductId })" title="Xem biến thể">
+                                        <img src="/images/Admin/Product/view.png" alt="View">
+                                    </a>
+                                    <!-- GHI CHÚ: Đã sửa controller="Product" -->
+                                    <a href="@Url.Action("Edit", "Product", new { id = item.ProductId })" title="Sửa sản phẩm">
+                                        <img src="/images/Admin/Product/edit.png" alt="Edit">
+                                    </a>
+                                    <!-- GHI CHÚ: Đã sửa controller="Product" -->
+                                    <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.ProductId" method="post"
+                                          data-confirm="true"
+                                          data-confirm-title="Xác nhận Xóa Sản phẩm"
+                                          data-confirm-message="Bạn có chắc chắn muốn XÓA TOÀN BỘ sản phẩm '@item.Name' và các biến thể của nó không? Hành động này không thể hoàn tác."
+                                          data-confirm-button-text="Xóa"
+                                          data-confirm-button-class="btn-danger"
+                                          data-confirm-header-class="bg-danger text-white">
+
+                                        <button type="submit" class="btn-delete" title="Xóa sản phẩm">
+                                            <img src="/images/Admin/Product/delete.png" alt="Delete">
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center p-4">
+                            Không có sản phẩm nào được tìm thấy.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* --- FOOTER (PHÂN TRANG - Tĩnh) --- *@
+    <footer class="products-footer">
+        <nav aria-label="Page navigation example" class="ms-auto">
+            <ul class="pagination pagination-sm">
+                <li class="page-item disabled"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+            </ul>
+        </nav>
+    </footer>
+</div>
+
+@* ============================================================================== *@
+@* ========================== JAVASCRIPT (ĐÃ TỐI ƯU) ============================ *@
+@* ============================================================================== *@
+<script>
+    function filterSearch() {
+        const searchId = document.getElementById("searchId").value;
+        const currentUrl = new URL(window.location.href);
+
+        currentUrl.searchParams.set("searchId", searchId);
+
+        window.location.href = currentUrl.href;
+    }
+</script>
+
+@* ============================================================================== *@
+@* ================================= CSS (STYLE) ================================ *@
+@* ============================================================================== *@
+<style>
+    .product-image {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .product-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-id {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .crud {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Khoảng cách giữa các nút */
+    }
+
+        .crud form {
+            display: inline-block;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+
+    .btn-delete, .btn-edit {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .btn-search-submit {
+        background: none;
+        border: none;
+        padding: 0 8px;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .crud a img, .crud button img {
+        height: 16px;
+        width: auto;
+        vertical-align: middle;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .crud a:hover img, .crud button:hover img {
+        opacity: 1;
+    }
+</style>

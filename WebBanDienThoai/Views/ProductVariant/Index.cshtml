@@ -1,6 +1,7 @@
-﻿@model WebBanDienThoai.Models.ViewModels.ProductDetailViewModel
+﻿@model WebBanDienThoai.Models.ViewModels.ProductVariantIndexViewModel
 
 @{
+    // GHI CHÚ: Đã đổi Model
     Layout = "~/Views/Shared/Admin_Layout1.cshtml";
     ViewData["Title"] = "Chi tiết: " + Model.Product.Name;
 }
@@ -8,6 +9,7 @@
 <div class="products-container">
 
     <div class="mb-3">
+        <!-- GHI CHÚ: Đường dẫn này trỏ về ProductController, là đúng -->
         <a href="@Url.Action("Index", "Product")" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 5px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
@@ -39,7 +41,7 @@
                         <dt class="col-sm-4">Màn hình:</dt>
                         <dd class="col-sm-8">@Model.Product.ScreenSize" - @Model.Product.ScreenTech</dd>
                         <dt class="col-sm-4">Ngày nhập:</dt>
-                        <dd class="col-sm-8">@(Model.Product.CreatedDate.ToString("dd/MM/yyyy h:mm tt") ?? "N/A")</dd>
+                        <dd class="col-sm-8">@(Model.Product.CreatedDate.GetValueOrDefault().ToString("dd/MM/yyyy h:mm tt") ?? "N/A")</dd>
                         <dt class="col-sm-4">Trạng thái:</dt>
                         <dd class="col-sm-8">
                             <span class="status-chip @(Model.Product.IsActive == true ? "available" : "hidden")">
@@ -93,7 +95,9 @@
                                 <td>@variant.Color</td>
                                 <td>@variant.Storage</td>
                                 <td>@variant.RAM</td>
-                                <td class="text-end text-decoration-line-through text-muted">@String.Format("{0:N0}", variant.Price) đ</td>
+                                <td class="text-end @(variant.DiscountPrice.HasValue? "text-decoration-line-through text-muted" : "fw-bold")">
+                                    @String.Format("{0:N0}", variant.Price) đ
+                                </td>
                                 <td class="text-end fw-bold text-danger">
                                     @(variant.DiscountPrice.HasValue? String.Format("{0:N0} đ", variant.DiscountPrice) : "N/A")
                                 </td>
@@ -105,7 +109,7 @@
                                 <td class="text-center">
                                     <div class="crud" style="justify-content: center;">
 
-                                        @* === BƯỚC 1: SỬA NÚT "SỬA" === *@
+                                        @* === NÚT SỬA === *@
                                         <button type="button"
                                                 class="btn-edit"
                                                 data-bs-toggle="modal"
@@ -114,7 +118,7 @@
                                                 data-variant-color="@variant.Color"
                                                 data-variant-storage="@variant.Storage"
                                                 data-variant-ram="@variant.RAM"
-                                                data-variant-price="@variant.Price.GetValueOrDefault(0)"
+                                                data-variant-price="@variant.Price"
                                                 data-variant-discount="@variant.DiscountPrice.GetValueOrDefault(0)"
                                                 data-variant-stock="@variant.Stock"
                                                 title="Sửa biến thể này">
@@ -149,7 +153,7 @@
 </div>
 
 @* ------------------------------------------------------------------------------------------------------------------------------------------------- *@
-@* MODAL THÊM BIẾN THỂ MỚI (Giữ nguyên) *@
+@* MODAL THÊM BIẾN THỂ MỚI *@
 <div class="modal fade" id="addVariantModal" tabindex="-1" aria-labelledby="addVariantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -157,43 +161,47 @@
                 <h5 class="modal-title" id="addVariantModalLabel">Thêm Biến Thể Mới cho Sản phẩm ID: @Model.Product.ProductId</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="AddVariant" asp-controller="Admin" asp-route-productId="@Model.Product.ProductId" method="post" enctype="multipart/form-data">
+
+            <!-- GHI CHÚ: Đã sửa asp-action="Create" và asp-controller="ProductVariant" -->
+            <form asp-action="Create" asp-controller="ProductVariant" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <input type="hidden" name="ProductId" value="@Model.Product.ProductId" />
+                    <!-- GHI CHÚ: Đã sửa asp-for trỏ vào CreateForm -->
+                    <input type="hidden" asp-for="CreateForm.ProductId" />
+
                     <div class="row">
                         <div class="col-md-6">
                             <h6 class="mb-3 text-danger">Thông số biến thể</h6>
                             <div class="mb-3">
-                                <label for="VariantColor" class="form-label">Màu sắc</label>
-                                <input type="text" class="form-control" id="VariantColor" name="Color" placeholder="Ví dụ: Xanh dương" required>
+                                <label asp-for="CreateForm.Color" class="form-label">Màu sắc</label>
+                                <input asp-for="CreateForm.Color" class="form-control" placeholder="Ví dụ: Xanh dương" required>
                             </div>
                             <div class="mb-3">
-                                <label for="VariantStorage" class="form-label">Dung lượng (GB)</label>
-                                <input type="text" class="form-control auto-gb" id="VariantStorage" name="Storage" placeholder="Chỉ nhập số, ví dụ: 128" required>
+                                <label asp-for="CreateForm.Storage" class="form-label">Dung lượng (GB)</label>
+                                <input asp-for="CreateForm.Storage" class="form-control auto-gb" placeholder="Chỉ nhập số, ví dụ: 128" required>
                             </div>
                             <div class="mb-3">
-                                <label for="VariantRam" class="form-label">RAM (GB)</label>
-                                <input type="text" class="form-control auto-gb" id="VariantRam" name="Ram" placeholder="Chỉ nhập số, ví dụ: 8">
+                                <label asp-for="CreateForm.Ram" class="form-label">RAM (GB)</label>
+                                <input asp-for="CreateForm.Ram" class="form-control auto-gb" placeholder="Chỉ nhập số, ví dụ: 8">
                             </div>
                         </div>
                         <div class="col-md-6 border-start">
                             <h6 class="mb-3 text-danger">Giá & Tồn kho</h6>
                             <div class="mb-3">
-                                <label for="VariantPrice" class="form-label">Giá bán gốc (vnd)</label>
-                                <input type="number" step="1000" min="0" class="form-control" id="VariantPrice" name="Price" required>
+                                <label asp-for="CreateForm.Price" class="form-label">Giá bán gốc (vnd)</label>
+                                <input asp-for="CreateForm.Price" type="number" step="1000" min="0" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label for="VariantDiscountPrice" class="form-label">Giá khuyến mãi (vnd - Để trống nếu không KM)</label>
-                                <input type="number" step="1000" min="0" class="form-control" id="VariantDiscountPrice" name="DiscountPrice">
+                                <label asp-for="CreateForm.DiscountPrice" class="form-label">Giá khuyến mãi (vnd - Để trống nếu không KM)</label>
+                                <input asp-for="CreateForm.DiscountPrice" type="number" step="1000" min="0" class="form-control">
                             </div>
                             <div class="mb-3">
-                                <label for="VariantStock" class="form-label">Số lượng tồn kho</label>
-                                <input type="number" min="0" class="form-control" id="VariantStock" name="Stock" required>
+                                <label asp-for="CreateForm.Stock" class="form-label">Số lượng tồn kho</label>
+                                <input asp-for="CreateForm.Stock" type="number" min="0" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label for="VariantImage" class="form-label">Ảnh Biến thể (Tùy chọn)</label>
-                                <input class="form-control" type="file" id="VariantImage" name="ImageFile">
+                                <label asp-for="CreateForm.ImageFile" class="form-label">Ảnh Biến thể (Tùy chọn)</label>
+                                <input asp-for="CreateForm.ImageFile" class="form-control" type="file">
                             </div>
                         </div>
                     </div>
@@ -208,35 +216,41 @@
 </div>
 @* ------------------------------------------------------------------------------------------------------------------------------------------------- *@
 
-@* MODAL XÓA BIẾN THỂ (Giữ nguyên) *@
-<div class="modal fade" id="deleteVariantModal" tabindex="-1" aria-labelledby="deleteVariantModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteVariantModalLabel">Xác nhận Xóa Biến thể</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn chắc chắn muốn xóa biến thể này?</p>
-                <p class="text-danger fw-bold" id="variant-to-delete-name"></p>
-                <small class="text-muted">Hành động này không thể hoàn tác.</small>
-            </div>
-            <div class="modal-footer">
-                <form asp-action="DeleteVariant" asp-controller="Admin" method="post" id="deleteVariantForm">
+@* MODAL XÓA BIẾN THỂ *@
+<form asp-action="Delete" asp-controller="ProductVariant" method="post" id="deleteVariantForm">
+
+    <div class="modal fade" id="deleteVariantModal" tabindex="-1" aria-labelledby="deleteVariantModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteVariantModalLabel">Xác nhận Xóa Biến thể</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Bạn chắc chắn muốn xóa biến thể này?</p>
+                    <p class="text-danger fw-bold" id="variant-to-delete-name"></p>
+                    <small class="text-muted">Hành động này không thể hoàn tác.</small>
+
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" id="delete-variant-id-input" value="0" />
+                    <input type="hidden" name="variantId" id="delete-variant-id-input" value="0" />
+                    <input type="hidden" name="productId" value="@Model.Product.ProductId" />
+                </div>
+
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-danger">Xóa Biến Thể</button>
-                </form>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
+
+</form>
 @* ------------------------------------------------------------------------------------------------------------------------------------------------- *@
 
-@* ================================================================== *@
-@* === BƯỚC 2: Thêm HTML cho Modal Sửa (Pop-up Sửa) === *@
-@* ================================================================== *@
+@* MODAL SỬA BIẾN THỂ *@
 <div class="modal fade" id="editVariantModal" tabindex="-1" aria-labelledby="editVariantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -244,11 +258,12 @@
                 <h5 class="modal-title" id="editVariantModalLabel">Sửa Biến Thể (ID: <span id="edit-variant-id-display"></span>)</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            @* Form này sẽ post đến Action "EditVariant" (bạn sẽ cần tạo nó trong Controller) *@
-            <form asp-action="EditVariant" asp-controller="Admin" method="post">
+
+            <!-- GHI CHÚ: Đã sửa asp-action="Edit" và asp-controller="ProductVariant" -->
+            <!-- GHI CHÚ: Form này đã tương thích với ProductVariantEditViewModel -->
+            <form asp-action="Edit" asp-controller="ProductVariant" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    @* Input ẩn để gửi ProductId (để biết đường quay lại) và VariantId (để biết sửa cái nào) *@
                     <input type="hidden" name="ProductId" value="@Model.Product.ProductId" />
                     <input type="hidden" name="VariantId" id="edit-variant-id" />
 
@@ -297,53 +312,62 @@
 
 
 @* ================================================================== *@
-@* === BƯỚC 3: Thêm JavaScript cho Modal Sửa === *@
+@* === JAVASCRIPT CHO CÁC MODAL === *@
 @* ================================================================== *@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // --- Code xử lý 'auto-gb' (Giữ nguyên) ---
+        // --- Code xử lý 'auto-gb' ---
         const inputs = document.querySelectorAll('.auto-gb');
         inputs.forEach(input => {
+            // Khi rời khỏi input
             input.addEventListener('blur', function () {
                 let value = this.value.trim();
                 if (value) {
-                    const numericValue = value.match(/^\d+/);
-                    if (numericValue && numericValue[0]) { this.value = numericValue[0] + 'GB'; }
-                    else { this.value = ''; }
+                    const numericValue = value.match(/^\d+/); // Lấy số
+                    if (numericValue && numericValue[0]) {
+                        this.value = numericValue[0] + 'GB';
+                    }
+                    else {
+                        this.value = ''; // Xóa nếu không phải là số
+                    }
                 }
             });
+            // Khi focus vào input
             input.addEventListener('focus', function () {
                 let value = this.value;
-                if (value.endsWith('GB')) { this.value = value.replace('GB', ''); }
+                if (value.endsWith('GB')) {
+                    this.value = value.replace('GB', '');
+                }
             });
         });
 
-        // --- Code xử lý Modal Xóa (Giữ nguyên) ---
+        // --- Code xử lý Modal Xóa (Delete) ---
         var deleteModal = document.getElementById('deleteVariantModal');
         if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
                 var variantId = button.getAttribute('data-variant-id');
                 var variantName = button.getAttribute('data-variant-name');
+
                 var idInput = deleteModal.querySelector('#delete-variant-id-input');
                 var nameDisplay = deleteModal.querySelector('#variant-to-delete-name');
+
                 if (idInput) { idInput.value = variantId; }
                 if (nameDisplay) { nameDisplay.textContent = "Biến thể: " + variantName; }
             });
         }
 
-        // --- CODE MỚI CHO POP-UP SỬA ---
+        // --- Code xử lý Modal Sửa (Edit) ---
         var editModal = document.getElementById('editVariantModal');
         if (editModal) {
             editModal.addEventListener('show.bs.modal', function (event) {
-                // Lấy button đã kích hoạt modal (nút bút)
                 var button = event.relatedTarget;
 
                 // Lấy dữ liệu từ data-* attributes
                 var id = button.getAttribute('data-variant-id');
                 var color = button.getAttribute('data-variant-color');
                 var storage = button.getAttribute('data-variant-storage');
-                var ram = button.getAttribute('data-variant-ram');
+                var ram = button.getAttribute('data-variant-ram'); // Có thể null
                 var price = button.getAttribute('data-variant-price');
                 var discount = button.getAttribute('data-variant-discount');
                 var stock = button.getAttribute('data-variant-stock');
@@ -365,19 +389,20 @@
 
                 // Xử lý "GB" trước khi gán
                 if(storageInput) storageInput.value = storage.replace('GB', '');
-                if(ramInput) ramInput.value = ram.replace('GB', '');
+
+                // GHI CHÚ: Đã sửa lỗi JS (ram có thể null)
+                if(ramInput) ramInput.value = (ram ? ram.replace('GB', '') : '');
 
                 if(priceInput) priceInput.value = price;
                 if(discountInput) discountInput.value = discount;
                 if(stockInput) stockInput.value = stock;
             });
         }
-        // --- HẾT CODE MỚI ---
     });
 </script>
 
 
-@* CSS (Giữ nguyên) *@
+@* CSS (Nội tuyến) *@
 <style>
     .crud {
         display: flex;
@@ -392,7 +417,7 @@
             padding: 0;
             line-height: 1;
         }
-    /* Thêm style cho nút edit mới */
+
     .btn-delete, .btn-edit {
         background: none;
         border: none;
@@ -417,6 +442,7 @@
         margin: 0;
     }
 
+    /* Style cho ảnh (giữ nguyên) */
     .product-image {
         width: 60px;
         height: 60px;
@@ -439,4 +465,22 @@
     .btn-close-white {
         filter: invert(1) grayscale(100%) brightness(200%);
     }
+
+    /* Style cho 'status-chip' (từ file Index.cshtml) */
+    .status-chip {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+        .status-chip.available {
+            background-color: #d1e7dd; /* green */
+            color: #0f5132;
+        }
+
+        .status-chip.hidden {
+            background-color: #e2e3e5; /* gray */
+            color: #41464b;
+        }
 </style>

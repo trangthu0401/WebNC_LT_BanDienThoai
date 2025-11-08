@@ -1,20 +1,3 @@
-﻿@{
-    Layout = null;
-    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-}
-
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Rabit Store</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link href="~/css/master.css" rel="stylesheet" />
-
     <style>
         .header-icons .dropdown-toggle {
             cursor: pointer;
@@ -76,13 +59,6 @@
         <div class="header-left">
             <img src="~/Images/Admin/logo.png" alt="Rabit Store Logo" class="logo" />
         </div>
-        <div class="header-right">
-            <div class="header-search">
-                <input type="text" placeholder="Tìm kiếm..." />
-            </div>
-            <div class="header-icons">
-                <i class="fa-regular fa-bell"></i>
-                <i class="fa-solid fa-gear"></i>
                 <div class="dropdown">
                     <img src="https://i.pravatar.cc/100"
                          alt="avatar"
@@ -120,28 +96,9 @@
     </header>
 
     <div class="main-container">
-        <nav class="sidebar">
-            <a href="/Admin/Index" class="@(currentController == "Admin" && currentAction == "Index" ? "active" : "")">
-                <i class="fa-solid fa-chart-line"></i> Tổng quan
-            </a>
             <a href="/Admin/ManageProducts" class="@(currentController == "Admin" && (currentAction == "ManageProducts" || currentAction == "ProductDetails") ? "active" : "")">
                 <i class="fa-solid fa-box"></i> Sản phẩm
             </a>
-            <a href="/Admin/ManageCustomers" class="@(currentController == "Admin" && currentAction == "ManageCustomers" ? "active" : "")">
-                <i class="fa-solid fa-user"></i> Khách hàng
-            </a>
-            <a href="/Admin/ManageOrders" class="@(currentController == "Admin" && currentAction == "ManageOrders" ? "active" : "")">
-                <i class="fa-solid fa-cube"></i> Đơn hàng
-            </a>
-        </nav>
 
-        <main class="content">
-            @RenderBody()
-        </main>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-
-</body>
-</html>
+    @* === ĐÂY LÀ DÒNG CODE ĐỂ SỬA LỖI === *@
+    @* Nó tạo ra một "chỗ giữ" cho các script từ trang con (như validation) *@

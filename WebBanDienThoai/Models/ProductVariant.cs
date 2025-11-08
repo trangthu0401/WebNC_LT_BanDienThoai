@@ -13,7 +13,7 @@ public partial class ProductVariant
 
     public string? Storage { get; set; }
 
-    public string? Ram { get; set; }
+    public string? RAM { get; set; }
 
     public decimal? Price { get; set; }
 

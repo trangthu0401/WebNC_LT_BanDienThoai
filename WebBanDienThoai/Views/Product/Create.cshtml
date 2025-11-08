@@ -1,0 +1,184 @@
+﻿@model WebBanDienThoai.Models.ViewModels.ProductCreateViewModel
+
+@{
+    ViewData["Title"] = "Thêm Sản phẩm mới";
+    Layout = "~/Views/Shared/Admin_Layout1.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light py-3">
+                    <h4 class="mb-0">Thêm Sản phẩm mới</h4>
+                </div>
+
+                <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
+                <form asp-action="Create" asp-controller="Product" method="post" enctype="multipart/form-data">
+
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+
+                            <!-- === CỘT 1: THÔNG TIN CHUNG === -->
+                            <div class="col-md-5">
+                                <h5 class="mb-3">1. Thông tin chung</h5>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.Name" class="form-label">Tên sản phẩm</label>
+                                    <input asp-for="Product.Name" class="form-control" />
+                                    <span asp-validation-for="Product.Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.BrandId" class="form-label">Hãng sản xuất</label>
+                                    <select asp-for="Product.BrandId" class="form-select"
+                                            asp-items="@Model.BrandList">
+                                        <option value="">-- Chọn hãng --</option>
+                                    </select>
+                                    <span asp-validation-for="Product.BrandId" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Product.Description" class="form-control" rows="8"></textarea>
+                                    <span asp-validation-for="Product.Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.ReleaseDate" class="form-label">Ngày ra mắt</label>
+                                    <input asp-for="Product.ReleaseDate" type="date" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="MainImageFile" class="form-label">Ảnh đại diện sản phẩm (Ảnh chính)</label>
+                                    <input asp-for="MainImageFile" class="form-control" type="file" accept="image/*">
+                                    <span asp-validation-for="MainImageFile" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- === CỘT 2: THÔNG SỐ KỸ THUẬT === -->
+                            <div class="col-md-3">
+                                <h5 class="mb-3">2. Thông số kỹ thuật</h5>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.Chipset" class="form-label">Chipset</label>
+                                    <input asp-for="Product.Chipset" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.OperatingSystem" class="form-label">Hệ điều hành</label>
+                                    <input asp-for="Product.OperatingSystem" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.ScreenSize" class="form-label">Màn hình (inch)</label>
+                                    <input asp-for="Product.ScreenSize" type="number" step="0.1" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.ScreenTech" class="form-label">Công nghệ màn hình</label>
+                                    <input asp-for="Product.ScreenTech" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.RefreshRate" class="form-label">Tần số quét (Hz)</label>
+                                    <input asp-for="Product.RefreshRate" type="number" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.BatteryCapacity" class="form-label">Pin (mAh)</label>
+                                    <input asp-for="Product.BatteryCapacity" type="number" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.RearCamera" class="form-label">Camera sau</label>
+                                    <input asp-for="Product.RearCamera" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.FrontCamera" class="form-label">Camera trước</label>
+                                    <input asp-for="Product.FrontCamera" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.Weight" class="form-label">Trọng lượng (gram)</label>
+                                    <input asp-for="Product.Weight" type="number" step="0.1" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Product.Dimensions" class="form-label">Kích thước (mm)</label>
+                                    <input asp-for="Product.Dimensions" class="form-control" />
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" asp-for="Product.ChargerIncluded" value="true" checked>
+                                    <label class="form-check-label" asp-for="Product.ChargerIncluded">
+                                        Có kèm sạc
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- === CỘT 3: BIẾN THỂ ĐẦU TIÊN === -->
+                            <div class="col-md-4">
+                                <h5 class="mb-3">3. Biến thể đầu tiên (SKU)</h5>
+
+                                <div class="alert alert-info p-2 small">
+                                    Bạn phải tạo ít nhất 1 biến thể (SKU) để bán.
+                                    Bạn có thể thêm nhiều biến thể hơn sau.
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="VariantColor" class="form-label">Màu sắc</label>
+                                        <input asp-for="VariantColor" class="form-control" placeholder="Vd: Titan Tự Nhiên" required />
+                                        <span asp-validation-for="VariantColor" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="VariantStorage" class="form-label">Bộ nhớ trong</label>
+                                        <input asp-for="VariantStorage" class="form-control" placeholder="Vd: 256GB" required />
+                                        <span asp-validation-for="VariantStorage" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="VariantRam" class="form-label">RAM (Nếu có)</label>
+                                    <input asp-for="VariantRam" class="form-control" placeholder="Vd: 8GB" />
+                                    <!-- Không bắt buộc -->
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="VariantPrice" class="form-label">Giá bán (VNĐ)</label>
+                                        <input asp-for="VariantPrice" type="number" class="form-control" required />
+                                        <span asp-validation-for="VariantPrice" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="VariantStock" class="form-label">Tồn kho</label>
+                                        <input asp-for="VariantStock" type="number" class="form-control" required />
+                                        <span asp-validation-for="VariantStock" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="VariantImageFile" class="form-label">Ảnh riêng cho biến thể (Bỏ trống nếu dùng ảnh chính)</label>
+                                    <input asp-for="VariantImageFile" class="form-control" type="file" accept="image/*">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-light text-end py-3">
+                        <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
+                        <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary">Lưu và Thêm sản phẩm</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

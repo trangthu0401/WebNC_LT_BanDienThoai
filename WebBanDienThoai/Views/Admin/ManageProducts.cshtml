@@ -12,8 +12,8 @@
     @* --- HEADER (TÌM KIẾM, LỌC, THÊM MỚI) --- *@
     <div class="products-header">
         <form class="product-search-form">
-            <input type="text" placeholder="Tìm kiếm...">
-            <img src="/images/Admin/Product/search_black.png" alt="Search Icon">
+            <input type="text" id="searchId" value="@ViewBag.SearchId" placeholder="Tìm kiếm...">
+            <img src="/images/Admin/Product/search_black.png" alt="Search Icon" onclick="filterSearch()">
         </form>
         <div class="products-actions">
             <button class="btn btn-secondary">
@@ -323,6 +323,12 @@
             });
         }
     });
+        function filterSearch() {
+            const searchId = document.getElementById("searchId").value;
+
+            window.location.href = `?searchId=${encodeURIComponent(searchId)}`
+
+        }
 </script>
 @* --- HẾT JAVASCRIPT --- *@
 

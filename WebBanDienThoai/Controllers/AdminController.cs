@@ -1,8 +1,12 @@
 ﻿// Thêm các using cần thiết cho Controller, DbContext, Models, ViewModels
+using Microsoft.AspNetCore.Hosting; // Cần thiết cho việc lấy đường dẫn wwwroot
+using Microsoft.AspNetCore.Http; // Cần thiết cho IFormFile
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering; // Cần thiết cho SelectListItem (dropdown)
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;                    // Cần thiết cho việc xử lý file (Path, FileStream)
 using System.Linq;
 using System.Threading.Tasks;
 using WebBanDienThoai.Models;        // Namespace Models của bạn
@@ -54,15 +58,24 @@ namespace WebBanDienThoai.Controllers
         // --- 3. QUẢN LÝ SẢN PHẨM (Trang chính) ---
 
         // GET: /Admin/ManageProducts
+        // Lấy danh sách sản phẩm, tính toán giá/tồn kho để hiển thị
         public async Task<IActionResult> ManageProducts(int? brandId)
         {
+
+
             try
             {
+
                 var productsQuery = _context.Products
                                             .AsNoTracking()
                                             .Include(p => p.Brand)
                                             .Include(p => p.ProductVariants)
                                             .AsQueryable();
+
+                if (!string.IsNullOrEmpty(searchId))
+                {
+                    productsQuery = productsQuery.Where(o => o.ProductId.ToString().Contains(searchId) || o.Name.Contains(searchId));
+                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -115,6 +128,8 @@ namespace WebBanDienThoai.Controllers
                     BrandCounts = brandCounts,
                     TotalProductCount = totalProductCount
                 };
+
+                ViewBag.SearchId = searchId;
 
                 return View(viewModel);
             }
@@ -268,7 +283,7 @@ namespace WebBanDienThoai.Controllers
                         ProductId = newProduct.ProductId,
                         Color = viewModel.VariantColor ?? string.Empty,
                         Storage = viewModel.VariantStorage ?? string.Empty,
-                        Ram = viewModel.VariantRam ?? string.Empty,
+                        RAM = viewModel.VariantRam ?? string.Empty,
                         Price = viewModel.VariantPrice,
                         Stock = viewModel.VariantStock,
                         ImageUrl = variantImagePath ?? mainImagePath,
@@ -352,7 +367,7 @@ namespace WebBanDienThoai.Controllers
                         ProductId = viewModel.ProductId,
                         Color = viewModel.Color ?? string.Empty,
                         Storage = storageValue.Replace("GB", "").Trim(),
-                        Ram = ramValue.Replace("GB", "").Trim(),
+                        RAM = ramValue.Replace("GB", "").Trim(),
                         Price = viewModel.Price,
                         DiscountPrice = viewModel.DiscountPrice,
                         Stock = viewModel.Stock,
@@ -398,7 +413,7 @@ namespace WebBanDienThoai.Controllers
 
                 variantToUpdate.Color = Color;
                 variantToUpdate.Storage = Storage.EndsWith("GB") ? Storage : Storage + "GB";
-                variantToUpdate.Ram = string.IsNullOrEmpty(Ram) ? null : (Ram.EndsWith("GB") ? Ram : Ram + "GB");
+                variantToUpdate.RAM = string.IsNullOrEmpty(Ram) ? null : (Ram.EndsWith("GB") ? Ram : Ram + "GB");
                 variantToUpdate.Price = Price;
                 variantToUpdate.DiscountPrice = DiscountPrice;
                 variantToUpdate.Stock = Stock;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebBanDienThoai.Models;
 
@@ -9,6 +10,7 @@ public partial class Product
 
     public string Name { get; set; } = null!;
 
+    [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn một hãng sản xuất.")]
     public int BrandId { get; set; }
 
     public string? Chipset { get; set; }
@@ -17,7 +19,7 @@ public partial class Product
 
     public short? BatteryCapacity { get; set; }
 
-    public bool? ChargerIncluded { get; set; }
+    public bool ChargerIncluded { get; set; }
 
     public decimal? ScreenSize { get; set; }
 
@@ -39,13 +41,13 @@ public partial class Product
 
     public string? MainImage { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     public DateTime? CreatedDate { get; set; }
 
     public DateTime? UpdatedDate { get; set; }
 
-    public virtual Brand Brand { get; set; } = null!;
+    public virtual Brand? Brand { get; set; } = null!;
 
     public virtual ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
 }

@@ -1,0 +1,133 @@
+﻿@* BẮT BUỘC: Khai báo Model mà View này sẽ nhận *@
+@model WebBanDienThoai.Models.ViewModels.DashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/Admin_Layout1.cshtml";
+    ViewData["Title"] = "Tổng quan";
+}
+
+<div class="content-body">
+    <h1 class="content-title">Tổng quan</h1>
+    <link href="~/css/Dashboard.css" rel="stylesheet" />
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <p class="stat-card-title">Doanh thu</p>
+                @* LẤY DỮ LIỆU TỪ DB: TotalRevenue *@
+                <p class="stat-card-value">@Model.TotalRevenue.ToString("0") ₫</p>
+            </div>
+            <div class="stat-card-icon icon-revenue">
+                <img src="~/Images/Admin/Dashboard/admin_money_ic.png" alt="Revenue Icon" />
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <p class="stat-card-title">Sản phẩm</p>
+                @* LẤY DỮ LIỆU TỪ DB: ProductCount *@
+                <p class="stat-card-value">@Model.ProductCount</p>
+            </div>
+            <div class="stat-card-icon icon-products">
+                <img src="~/Images/Admin/Dashboard/admin_product_icon.png" alt="Products Icon" />
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <p class="stat-card-title">Người dùng</p>
+                @* LẤY DỮ LIỆU TỪ DB: UserCount *@
+                <p class="stat-card-value">@Model.UserCount</p>
+            </div>
+            <div class="stat-card-icon icon-users">
+                <img src="~/Images/Admin/Dashboard/admin_user_ic.png" alt="Users Icon" />
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <p class="stat-card-title">Đơn hàng</p>
+                @* LẤY DỮ LIỆU TỪ DB: OrderCount *@
+                <p class="stat-card-value">@Model.OrderCount</p>
+            </div>
+            <div class="stat-card-icon icon-orders">
+                <img src="~/Images/Admin/Dashboard/admin_gift_ic.png" alt="Orders Icon" />
+            </div>
+        </div>
+
+    </section>
+
+    @* Phần biểu đồ (giữ nguyên, bạn sẽ làm sau) *@
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Doanh thu chi tiết</h3>
+            <div class="dropdown-selector">
+                <span>Tháng 10</span>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    @* Bảng Sản phẩm bán chạy *@
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 mb-0">Sản phẩm bán chạy</h3>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Tháng 10
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Tháng 9</a></li>
+                    <li><a class="dropdown-item" href="#">Tháng 8</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Tên sản phẩm</th>
+                        <th scope="col">Số lượng bán</th>
+                        <th scope="col">Giá</th>
+                        <th scope="col">Trạng thái</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @* DÙNG VÒNG LẶP FOREACH ĐỂ HIỂN THỊ DỮ LIỆU THẬT *@
+                    @foreach (var product in Model.TopSellingProducts)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="@Url.Content(product.ImageUrl ?? "~/images/placeholder.png")" alt="@product.ProductName" style="width: 40px; height: 40px; border-radius: 0%; object-fit: cover; margin-right: 10px;">
+                                    <span>@product.ProductName</span>
+                                </div>
+                            </td>
+
+                            <td>@product.QuantitySold</td>
+                            <td>@product.Price.Value.ToString("C0")</td>
+
+                            <td>
+                                @* Logic hiển thị trạng thái dựa vào số lượng tồn kho *@
+                                @if (product.Stock > 20)
+                                {
+                                    <span class="badge rounded-pill bg-success">Còn hàng</span>
+                                }
+                                else if (product.Stock > 0)
+                                {
+                                    <span class="badge rounded-pill bg-warning text-dark">Sắp hết</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-danger">Hết hàng</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
