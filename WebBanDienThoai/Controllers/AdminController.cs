@@ -40,7 +40,7 @@ namespace WebBanDienThoai.Controllers
                     ProductCount = await GetProductCount(),
                     UserCount = await GetUserCount(),
                     OrderCount = await GetOrderCount(),
-                    TopSellingProducts = await GetTopSellingProducts(5)
+                    TopSellingProducts = await GetTopSellingProducts(5) // Vẫn cần cho bảng
                 };
                 return View(dashboardViewModel);
             }
@@ -58,9 +58,8 @@ namespace WebBanDienThoai.Controllers
         {
             try
             {
-                // === SỬA: THÊM .AsNoTracking() ĐỂ TRÁNH LỖI CACHING ===
                 var productsQuery = _context.Products
-                                            .AsNoTracking() // <-- SỬA Ở ĐÂY
+                                            .AsNoTracking()
                                             .Include(p => p.Brand)
                                             .Include(p => p.ProductVariants)
                                             .AsQueryable();
@@ -96,9 +95,8 @@ namespace WebBanDienThoai.Controllers
                     })
                     .ToListAsync();
 
-                // === SỬA: THÊM .AsNoTracking() ===
                 var brandCounts = await _context.Brands
-                    .AsNoTracking() // <-- SỬA Ở ĐÂY
+                    .AsNoTracking()
                     .Select(b => new BrandCount
                     {
                         brandId = b.BrandId,
@@ -139,9 +137,6 @@ namespace WebBanDienThoai.Controllers
             int totalStock
         )
         {
-            // === SỬA: THÊM LOG DEBUG ===
-            Console.WriteLine($"--- DEBUG: QuickEditProduct cho ID {productId} được gọi. Giá trị IsActive nhận được: {isActive}");
-
             try
             {
                 var productToUpdate = await _context.Products
@@ -154,12 +149,10 @@ namespace WebBanDienThoai.Controllers
                     return RedirectToAction(nameof(ManageProducts));
                 }
 
-                // Cập nhật thông tin chung
                 productToUpdate.Name = name;
                 productToUpdate.BrandId = brandId;
-                productToUpdate.IsActive = isActive; // Đặt trạng thái
+                productToUpdate.IsActive = isActive;
 
-                // Lấy biến thể đầu tiên để cập nhật
                 var firstVariant = productToUpdate.ProductVariants?.OrderBy(v => v.VariantId).FirstOrDefault();
 
                 if (firstVariant != null)
@@ -168,12 +161,7 @@ namespace WebBanDienThoai.Controllers
                     firstVariant.DiscountPrice = lowestPrice;
                     firstVariant.Stock = totalStock;
                 }
-                else
-                {
-                    Console.WriteLine($"--- DEBUG CẢNH BÁO: Sản phẩm ID {productId} không có biến thể nào.");
-                }
 
-                // === SỬA: THÊM CODE ÉP EF CẬP NHẬT ===
                 _context.Entry(productToUpdate).State = EntityState.Modified;
                 if (firstVariant != null)
                 {
@@ -181,21 +169,13 @@ namespace WebBanDienThoai.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-
                 TempData["StatusMessage"] = "Cập nhật sản phẩm thành công.";
-                Console.WriteLine($"--- DEBUG: Đã SaveChangesAsync() cho ID {productId} thành công.");
             }
             catch (Exception ex)
             {
-                // === SỬA: LOG CHI TIẾT LỖI (QUAN TRỌNG NHẤT) ===
                 string fullErrorMessage = ex.ToString();
                 Console.WriteLine($"--- DEBUG LỖI NGHIÊM TRỌNG KHI LƯU ID {productId}: {fullErrorMessage}");
-
-                string displayError = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    displayError += " | Lỗi bên trong: " + ex.InnerException.Message;
-                }
+                string displayError = ex.InnerException?.Message ?? ex.Message;
                 TempData["StatusMessage"] = "Lỗi khi lưu sản phẩm: " + displayError;
             }
 
@@ -213,10 +193,7 @@ namespace WebBanDienThoai.Controllers
                                                 .Include(p => p.ProductVariants)
                                                 .FirstOrDefaultAsync(p => p.ProductId == id);
 
-                if (productToDelete == null)
-                {
-                    return NotFound();
-                }
+                if (productToDelete == null) return NotFound();
 
                 if (productToDelete.ProductVariants != null && productToDelete.ProductVariants.Any())
                 {
@@ -225,7 +202,6 @@ namespace WebBanDienThoai.Controllers
 
                 _context.Products.Remove(productToDelete);
                 await _context.SaveChangesAsync();
-
                 TempData["StatusMessage"] = "Đã xóa sản phẩm thành công.";
             }
             catch (Exception ex)
@@ -255,7 +231,6 @@ namespace WebBanDienThoai.Controllers
                                         .ToListAsync(),
                 Product = new Product()
             };
-
             return View(viewModel);
         }
 
@@ -322,7 +297,6 @@ namespace WebBanDienThoai.Controllers
                                                Text = b.BrandName
                                            })
                                            .ToListAsync();
-
             return View(viewModel);
         }
 
@@ -339,17 +313,13 @@ namespace WebBanDienThoai.Controllers
                                             .Include(p => p.ProductVariants)
                                             .FirstOrDefaultAsync(p => p.ProductId == id);
 
-                if (product == null)
-                {
-                    return NotFound();
-                }
+                if (product == null) return NotFound();
 
                 var viewModel = new ProductDetailViewModel
                 {
                     Product = product,
                     Variants = product.ProductVariants.ToList()
                 };
-
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -393,7 +363,6 @@ namespace WebBanDienThoai.Controllers
 
                     _context.ProductVariants.Add(newVariant);
                     await _context.SaveChangesAsync();
-
                     TempData["StatusMessage"] = "Thêm biến thể mới thành công!";
                 }
                 catch (Exception ex)
@@ -409,14 +378,8 @@ namespace WebBanDienThoai.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVariant(
-            int ProductId,
-            int VariantId,
-            string Color,
-            string Storage,
-            string Ram,
-            decimal Price,
-            decimal? DiscountPrice,
-            int Stock)
+            int ProductId, int VariantId, string Color, string Storage, string Ram,
+            decimal Price, decimal? DiscountPrice, int Stock)
         {
             if (Stock < 0 || Price < 0)
             {
@@ -427,7 +390,6 @@ namespace WebBanDienThoai.Controllers
             try
             {
                 var variantToUpdate = await _context.ProductVariants.FindAsync(VariantId);
-
                 if (variantToUpdate == null)
                 {
                     TempData["StatusMessage"] = "Lỗi: Không tìm thấy biến thể.";
@@ -442,7 +404,6 @@ namespace WebBanDienThoai.Controllers
                 variantToUpdate.Stock = Stock;
 
                 await _context.SaveChangesAsync();
-
                 TempData["StatusMessage"] = "Cập nhật biến thể (ID: " + VariantId + ") thành công.";
             }
             catch (Exception ex)
@@ -450,7 +411,6 @@ namespace WebBanDienThoai.Controllers
                 Console.WriteLine($"Lỗi khi sửa biến thể ID {VariantId}: {ex.Message}");
                 TempData["StatusMessage"] = "Lỗi khi cập nhật biến thể: " + ex.Message;
             }
-
             return RedirectToAction(nameof(ProductDetails), new { id = ProductId });
         }
 
@@ -463,32 +423,23 @@ namespace WebBanDienThoai.Controllers
             try
             {
                 var variantToDelete = await _context.ProductVariants.FindAsync(id);
-
                 if (variantToDelete == null)
                 {
                     TempData["StatusMessage"] = "Lỗi: Không tìm thấy biến thể để xóa.";
                     return RedirectToAction(nameof(ManageProducts));
                 }
-
                 productId = variantToDelete.ProductId;
-
                 _context.ProductVariants.Remove(variantToDelete);
                 await _context.SaveChangesAsync();
-
                 TempData["StatusMessage"] = "Đã xóa biến thể thành công.";
-                return RedirectToAction(nameof(ProductDetails), new { id = productId });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Lỗi khi xóa biến thể ID {id}: {ex.Message}");
                 TempData["StatusMessage"] = "Lỗi khi xóa biến thể: " + ex.Message;
-
-                if (productId > 0)
-                {
-                    return RedirectToAction(nameof(ProductDetails), new { id = productId });
-                }
-                return RedirectToAction(nameof(ManageProducts));
             }
+
+            return RedirectToAction(nameof(ProductDetails), new { id = productId });
         }
 
 
@@ -508,12 +459,11 @@ namespace WebBanDienThoai.Controllers
         private async Task<string?> UploadFile(IFormFile file)
         {
             string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
-            if (!Directory.Exists(uploadDir))
-            {
-                Directory.CreateDirectory(uploadDir);
-            }
+            if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
             string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
             string filePath = Path.Combine(uploadDir, uniqueFileName);
+
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(fileStream);
@@ -523,7 +473,7 @@ namespace WebBanDienThoai.Controllers
 
         private async Task<decimal> GetTotalRevenue()
         {
-            return await _context.Orders.SumAsync(o => o.TotalAmount) ?? 0m;
+            return await _context.Orders.SumAsync(o => o.TotalAmount) ;
         }
 
         private async Task<int> GetProductCount()
@@ -541,6 +491,7 @@ namespace WebBanDienThoai.Controllers
             return await _context.Orders.CountAsync();
         }
 
+        // HÀM NÀY VẪN CÒN ĐƯỢC SỬ DỤNG (CHO BẢNG BÊN DƯỚI)
         private async Task<List<BestSellingProductViewModel>> GetTopSellingProducts(int topN = 5)
         {
             var topVariantsInfo = await _context.OrderDetails
@@ -581,6 +532,59 @@ namespace WebBanDienThoai.Controllers
                 }
             }
             return result.OrderByDescending(r => r.QuantitySold).ToList();
+        }
+
+        // --- 8. API ENDPOINTS CHO DASHBOARD ---
+
+        // === PHẦN API NÀY ĐÃ BỊ XÓA (VÌ ĐÃ XÓA BIỂU ĐỒ) ===
+        // [HttpGet]
+        // public async Task<IActionResult> GetSalesData() { ... }
+        // === HẾT PHẦN BỊ XÓA ===
+
+        // GET: /Admin/GetRevenueByDay?year=2025&month=10 (API cho biểu đồ doanh thu)
+        [HttpGet]
+        public async Task<IActionResult> GetRevenueByDay(int year, int month)
+        {
+            try
+            {
+                // 1. Lấy dữ liệu thô từ CSDL
+                var revenueData = await _context.Orders
+                    .Where(o => o.OrderDate.HasValue &&
+                                o.OrderDate.Value.Year == year &&
+                                o.OrderDate.Value.Month == month)
+                    .GroupBy(o => o.OrderDate.Value.Day)
+                    .Select(g => new
+                    {
+                        Day = g.Key,
+                        Total = g.Sum(o => o.TotalAmount)
+                    })
+                    .ToDictionaryAsync(k => k.Day, v => v.Total);
+
+                // 2. Tạo nhãn cho tất cả các ngày trong tháng
+                int daysInMonth = DateTime.DaysInMonth(year, month);
+                var labels = new List<string>();
+                var data = new List<decimal>();
+
+                for (int i = 1; i <= daysInMonth; i++)
+                {
+                    labels.Add("Ngày " + i);
+                    if (revenueData.ContainsKey(i))
+                    {
+                        data.Add(revenueData[i]);
+                    }
+                    else
+                    {
+                        data.Add(0);
+                    }
+                }
+
+                // 3. Trả về JSON
+                return Json(new { labels, data });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Lỗi máy chủ: " + ex.Message);
+            }
         }
 
     } // <-- Đóng class AdminController

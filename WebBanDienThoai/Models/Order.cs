@@ -13,7 +13,7 @@ public partial class Order
 
     public string? Status { get; set; }
 
-    public decimal? TotalAmount { get; set; }
+    public decimal TotalAmount { get; set; }
 
     public virtual Customer? Customer { get; set; }
 
