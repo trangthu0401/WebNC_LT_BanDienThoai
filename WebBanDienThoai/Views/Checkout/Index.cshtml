@@ -1,0 +1,131 @@
+﻿@model WebBanDienThoai.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Thông tin thanh toán";
+
+    // Code này dùng để "link" file checkout.css VÀO TRANG NÀY
+    @section Styles {
+        <link rel="stylesheet" href="~/css/checkout.css" />
+    }
+}
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <a href="@Url.Action("Index", "Home")">&lt;</a>
+        <span>THÔNG TIN</span>
+    </div>
+
+    <div class="stepper">
+        <div class="step active">1. Thông tin</div>
+        <div class="step">2. Thanh toán</div>
+    </div>
+
+    <div class="checkout-body">
+
+        <div class="checkout-form">
+            <form asp-action="PlaceOrder" method="post">
+
+                <div class="info-section">
+                    <h2>Thông tin khách hàng</h2>
+                    <div class="form-group">
+                        <label asp-for="FullName">Your name</label>
+                        <input asp-for="FullName" type="text" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email">EMAIL</label>
+                        <input asp-for="Email" type="email" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Phone">SĐT</label>
+                        <input asp-for="Phone" type="text" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <small>(*) Hoá đơn VAT sẽ được gửi qua email này</small><br />
+                        <small>Nhận email thông báo và ưu đãi từ RabitStore</small>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h2>Thông tin nhận hàng</h2>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="shippingMethod" value="pickup" />
+                            Nhận tại cửa hàng
+                        </label>
+                        <label class="radio-label active">
+                            <input type="radio" name="shippingMethod" value="delivery" checked />
+                            Giao hàng tận nơi
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="City">Tỉnh/Thành Phố</label>
+                        <input asp-for="City" type="text" class="form-control" placeholder="Nhập Tỉnh/Thành Phố" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="District">Quận/Huyện</label>
+                        <input asp-for="District" type="text" class="form-control" placeholder="Nhập Quận/Huyện" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Street">Địa chỉ (Số nhà, tên đường)</label>
+                        <input asp-for="Street" type="text" class="form-control" placeholder="Nhập địa chỉ" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Note">Ghi chú (nếu có)</label>
+                        <textarea asp-for="Note" class="form-control" placeholder="Nhập ghi chú"></textarea>
+                    </div>
+                </div>
+
+                <div class="checkout-actions">
+                    <button type="submit" class="btn-checkout">TIẾP TỤC</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="order-summary">
+            <h2>Đơn hàng của bạn</h2>
+
+            @foreach (var item in Model.CartItems)
+            {
+                <div class="product-item">
+                    <img src="@item.ImageUrl" alt="@item.ProductName" class="product-item-image" />
+                    <div class="product-item-info">
+                        <div class="product-item-name">@item.ProductName</div>
+                        <div class="product-item-specs">@item.Color / @item.Storage</div>
+                        <div class="product-item-qty">Số lượng: @item.Quantity</div>
+                    </div>
+                    <div class="product-item-price">
+                        @((item.UnitPrice * item.Quantity).ToString("N0"))đ
+                    </div>
+                </div>
+            }
+
+            <div class="summary-row">
+                <span>Tạm tính</span>
+                <span>@Model.Subtotal.ToString("N0")đ</span>
+            </div>
+            <div class="summary-row">
+                <span>Phí vận chuyển</span>
+                <span>@Model.ShippingFee.ToString("N0")đ</span>
+            </div>
+            <div class="summary-row total">
+                <span>Tổng cộng</span>
+                <span>@Model.Total.ToString("N0")đ</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const radioLabels = document.querySelectorAll('.radio-label');
+            radioLabels.forEach(label => {
+                label.addEventListener('click', function () {
+                    radioLabels.forEach(lbl => lbl.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+}

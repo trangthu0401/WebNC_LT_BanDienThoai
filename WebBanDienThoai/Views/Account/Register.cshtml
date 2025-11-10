@@ -1,0 +1,58 @@
+﻿@model WebBanDienThoai.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng Ký - Rabit Store";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <link rel="stylesheet" href="~/css/login.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="brand-section">
+            <img src="~/images/rabit-mascot.png" alt="Rabit Store Mascot" class="mascot" />
+            <h1>Rabit Store</h1>
+        </div>
+
+        <div class="form-section">
+            <form asp-action="Register" method="post">
+                <h2>Đăng Ký</h2>
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" placeholder="vidu@email.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" class="form-control" placeholder="Ít nhất 6 ký tự" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn-login">Đăng Ký</button>
+
+                <p class="signup-link">
+                    Bạn đã có tài khoản?
+                    <a asp.controller="Account" asp-action="Login">Đăng Nhập</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

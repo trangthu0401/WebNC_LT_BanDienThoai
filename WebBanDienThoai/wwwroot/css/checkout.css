@@ -1,0 +1,343 @@
+﻿:root {
+    --primary-red-solid: #ff2626;
+}
+
+.checkout-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.checkout-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+    .checkout-header a {
+        color: #333;
+        text-decoration: none;
+        font-size: 30px;
+    }
+
+.stepper {
+    display: flex;
+    justify-content: center;
+    gap: 100px;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 30px;
+}
+
+.step {
+    padding: 15px 0;
+    font-size: 18px;
+    color: #999;
+    border-bottom: 4px solid transparent;
+    position: relative;
+    top: 2px;
+}
+
+    .step.active {
+        color: var(--primary-red-solid);
+        border-bottom-color: var(--primary-red-solid);
+        font-weight: 600;
+    }
+
+.checkout-body {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+}
+
+.info-section {
+    margin-bottom: 30px;
+}
+
+    .info-section h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    .form-group textarea {
+        min-height: 80px;
+    }
+
+    .form-group input[readonly] {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .form-group small {
+        color: #555;
+    }
+
+.radio-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.radio-label {
+    padding: 15px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .radio-label input {
+        width: 18px;
+        height: 18px;
+    }
+
+    .radio-label.active {
+        border-color: var(--primary-red-solid);
+        background-color: #fff8f8;
+    }
+
+.checkout-actions {
+    margin-top: 30px;
+}
+
+.btn-checkout {
+    background-color: var(--primary-red-solid);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    border: none;
+}
+
+.order-summary {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fdfdfd;
+    height: fit-content;
+}
+
+    .order-summary h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+
+.product-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.product-item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    object-fit: cover;
+}
+
+.product-item-info {
+    flex: 1;
+}
+
+.product-item-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.product-item-price {
+    color: var(--primary-red-solid);
+    font-weight: 600;
+}
+
+.product-item-qty, .product-item-specs {
+    font-size: 14px;
+    color: #777;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+    .summary-row.total {
+        font-size: 20px;
+        font-weight: 600;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+
+@media (max-width: 992px) {
+    .checkout-body {
+        grid-template-columns: 1fr;
+    }
+
+    .order-summary {
+        grid-row: 1;
+        margin-bottom: 30px;
+    }
+}
+/* === BỔ SUNG CSS CHO TRANG THANH TOÁN (BƯỚC 2) === */
+
+/* Nhóm nhập mã giảm giá */
+.form-group.discount-group {
+    display: flex;
+}
+
+    .form-group.discount-group input {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: none;
+    }
+
+.btn-apply-discount {
+    padding: 0 20px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    font-weight: 600;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+    .btn-apply-discount:hover {
+        background-color: #e9e9e9;
+    }
+
+.discount-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Style mới cho danh sách phương thức thanh toán */
+.payment-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    gap: 10px;
+}
+
+    .payment-option.active {
+        border-color: var(--primary-red-solid);
+        background-color: #fff8f8;
+    }
+
+    .payment-option input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .payment-option .payment-text {
+        flex-grow: 1;
+        font-weight: 500;
+    }
+
+    .payment-option .payment-logos {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+        .payment-option .payment-logos img {
+            height: 24px;
+            width: auto;
+            max-width: 40px;
+        }
+
+.payment-condition-box {
+    background-color: #fffaf0;
+    border: 1px solid #ffe6b8;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+    .payment-condition-box ul {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin: 0;
+    }
+
+/* Tóm tắt đơn hàng (bên phải) */
+.order-summary .summary-row.discount {
+    color: var(--primary-red-solid);
+    font-weight: 600;
+}
+
+.order-summary .vat-note {
+    display: block;
+    text-align: right;
+    color: #777;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.final-total-bar {
+    border-top: 2px dashed #eee;
+    padding-top: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+    .final-total-bar .final-price {
+        color: var(--primary-red-solid);
+        font-size: 22px;
+    }

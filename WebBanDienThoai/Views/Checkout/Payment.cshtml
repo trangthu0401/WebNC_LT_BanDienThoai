@@ -1,0 +1,151 @@
+﻿@model WebBanDienThoai.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+    
+    // 1. Dùng chung file CSS với trang trước
+    @section Styles {
+        <link rel="stylesheet" href="~/css/checkout.css" />
+    }
+}
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <a asp-action="Index">&lt;</a> 
+        <span>THANH TOÁN</span>
+    </div>
+
+    <div class="stepper">
+        <div class="step">1. Thông tin</div>
+        <div class="step active">2. Thanh toán</div> </div>
+
+    <div class="checkout-body">
+
+        <div class="checkout-form">
+            
+            <form asp-action="PlaceOrder" method="post" id="PlaceOrderForm">
+                
+                <div class="info-section">
+                    <div class="form-group discount-group">
+                        <input asp-for="DiscountCode" type="text" class="form-control" placeholder="Nhập mã giảm giá (chỉ áp dụng 1 lần)" />
+                        <button type="button" class="btn-apply-discount">Áp dụng</button>
+                    </div>
+                    <a href="#" class="discount-link">hoặc chọn từ 1 mã giảm giá có sẵn &gt;</a>
+                </div>
+
+                <div class="info-section">
+                    <h2>Phương thức thanh toán</h2>
+                    
+                    <div class="payment-options-list">
+                        
+                        <label class="payment-option active"> <input asp-for="PaymentMethod" type="radio" value="COD" checked />
+                            <span class="payment-text">Thanh toán khi nhận hàng (COD)</span>
+                        </label>
+                        
+                        <div class="payment-condition-box" id="cod-message" style="display:block;">
+                            <ul>
+                                <li>Đơn sẽ được thanh toán khi được nhận.</li>
+                            </ul>
+                        </div>
+
+                        <label class="payment-option">
+                            <input asp-for="PaymentMethod" type="radio" value="VnPay" />
+                            <span class="payment-text">Thanh toán liên kết ngân hàng (ATM)</span>
+                             <span class="payment-logos">(ATM)</span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input asp-for="PaymentMethod" type="radio" value="QR" />
+                            <span class="payment-text">Thanh toán bằng mã QR</span>
+                             <span class="payment-logos">(QR)</span>
+                        </label>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="order-summary">
+            <h2>Đơn hàng của bạn</h2>
+            @foreach (var item in Model.CartItems)
+            {
+                <div class="product-item">
+                    <img src="@item.ImageUrl" alt="@item.ProductName" class="product-item-image" />
+                    <div class="product-item-info">
+                        <div class="product-item-name">@item.ProductName</div>
+                        <div class="product-item-specs">@item.Color / @item.Storage</div>
+                        <div class="product-item-qty">Số lượng: @item.Quantity</div>
+                    </div>
+                    <div class="product-item-price">@((item.UnitPrice * item.Quantity).ToString("N0"))đ</div>
+                </div>
+            }
+            
+            <div class="summary-row">
+                <span>Tạm tính</span>
+                <span>@Model.Subtotal.ToString("N0")đ</span>
+            </div>
+            
+            <div class="summary-row">
+                <span>Phí vận chuyển</span>
+                <span>@Model.ShippingFee.ToString("N0")đ</span>
+            </div>
+            
+            @if (Model.Discount > 0)
+            {
+                <div class="summary-row discount">
+                    <span>Giảm giá trực tiếp</span>
+                    <span>-@Model.Discount.ToString("N0")đ</span>
+                </div>
+            }
+
+            <div class="summary-row total">
+                <span>Tổng tiền</span>
+                <span>@Model.Total.ToString("N0")đ</span>
+            </div>
+            
+            <small class="vat-note">Đã gồm VAT và được làm tròn</small>
+            
+            <div class="final-total-bar">
+                <span>TỔNG TIỀN TẠM TÍNH:</span>
+                <span class="final-price">@Model.Total.ToString("N0")đ</span>
+            </div>
+            
+            <div class="checkout-actions">
+                <button type="submit" class="btn-checkout" form="PlaceOrderForm">THANH TOÁN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            const codMessage = document.getElementById('cod-message');
+            
+            // Hàm để ẩn/hiện thông báo COD
+            function toggleCodMessage(selectedValue) {
+                if (selectedValue === 'COD') {
+                    codMessage.style.display = 'block';
+                } else {
+                    codMessage.style.display = 'none';
+                }
+            }
+            
+            // --- XỬ LÝ CLICK CHỌN GIAO DIỆN ---
+            paymentOptions.forEach(label => {
+                label.addEventListener('click', function () {
+                    // 1. Làm đẹp (thêm viền đỏ)
+                    paymentOptions.forEach(lbl => lbl.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const radioInput = this.querySelector('input[type="radio"]');
+                    radioInput.checked = true;
+                    
+                    // 2. Ẩn/hiện thông báo COD
+                    toggleCodMessage(radioInput.value);
+                });
+            });
+        });
+    </script>
+}

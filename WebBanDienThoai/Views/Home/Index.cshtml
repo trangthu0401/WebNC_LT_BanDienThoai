@@ -1,8 +1,56 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section id="hero" class="hero-section">
+    <div class="container hero-container">
+        <aside class="category-sidebar">
+            <ul>
+                <li><a href="#"><span>Điện thoại</span> <img src="~/img/next .png" alt="arrow"></a></li>
+                <li><a href="#"><span>Tablet</span> <img src="~/img/next .png" alt="arrow"></a></li>
+                <li><a href="#"><span>Tai nghe</span> <img src="~/img/next .png" alt="arrow"></a></li>
+                <li><a href="#"><span>Loa</span> <img src="~/img/next .png" alt="arrow"></a></li>
+                <li><a href="#"><span>Thu cũ</span> <img src="~/img/next .png" alt="arrow"></a></li>
+            </ul>
+        </aside>
+        <div class="hero-carousel">
+            <img src="https://cdn2.cellphones.com.vn/insecure/rs:fill:1036:450/q:90/plain/https://dashboard.cellphones.com.vn/storage/690x300_iPhone_17_Pro_Opensale_v3.png" alt="iPhone Air Banner" class="carousel-image">
+            <button class="carousel-control prev">
+                <img src="~/img/muitenphai.png" alt="Previous">
+            </button>
+            <button class="carousel-control next">
+                <img src="~/img/muitenphai.png" alt="Next">
+            </button>
+        </div>
+        <aside class="ads-sidebar">
+            <a href="#" class="ad-banner">
+                <img src="~/img/poster1.png" alt="Watch Series Ad">
+            </a>
+            <a href="#" class="ad-banner">
+                <img src="~/img/poster2.png" alt="S25 Series Ad">
+            </a>
+        </aside>
+    </div>
+</section>
+
+<section id="products" class="products-section">
+    <div class="container">
+        <div class="product-grid">
+            <article class="product-card">
+                <img src="https://cdn2.cellphones.com.vn/insecure/rs:fill:300:300/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone_air-3_2.jpg" alt="Iphone 16 air / VN" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">Iphone 16 air / VN</h3>
+                    <p class="product-price">24.890.000đ</p>
+                    <button class="wishlist-button">
+                        <img src="~/img/tym.png" alt="Wishlist heart">
+                        <span>Yêu thích</span>
+                    </button>
+                </div>
+            </article>
+        </div>
+    </div>
+    <a href="#" class="fab-contact">
+        <span>Liên hệ</span>
+        <img src="~/img/lienhe.png" alt="Contact Icon">
+    </a>
+</section>
