@@ -1,0 +1,305 @@
+﻿/* Biến màu (giả định từ file home.css) */
+:root {
+    --primary-red: #D70018;
+    --light-gray: #f8f9fa;
+    --text-color: #333;
+    --border-color: #eee;
+    --white: #fff;
+    --body-bg: #f3f4f6;
+}
+
+body {
+    background-color: var(--body-bg);
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* ============================
+   Layout chính của trang
+   ============================ */
+.cart-page-container {
+    padding: 30px 0;
+}
+
+    .cart-page-container h1 {
+        font-size: 2rem;
+        color: var(--text-color);
+        margin-bottom: 25px;
+    }
+
+.cart-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+/* ============================
+   Cột bên trái (Danh sách sản phẩm)
+   ============================ */
+.cart-items-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.cart-table-header {
+    display: grid;
+    grid-template-columns: 40px 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
+    color: #555;
+    align-items: center;
+}
+
+.header-product {
+    grid-column: 2;
+}
+
+.header-price, .header-quantity, .header-total {
+    text-align: center;
+}
+
+/* Kiểu cho mỗi dòng sản phẩm */
+.cart-item-row {
+    display: grid;
+    grid-template-columns: 40px 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.item-select {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cart-item-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-red);
+}
+
+.item-product-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+    .item-product-info img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+
+.item-name {
+    font-weight: bold;
+    color: var(--text-color);
+    margin: 0 0 5px 0;
+}
+
+.item-variant {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.item-price, .item-total-price {
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-red);
+}
+
+.item-quantity {
+    display: flex;
+    justify-content: center;
+}
+
+/* Nút +/- số lượng */
+.quantity-selector {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.quantity-btn {
+    background-color: var(--light-gray);
+    border: none;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+    .quantity-btn:hover {
+        background-color: #e9ecef;
+    }
+
+.quantity-input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    padding: 5px;
+    font-size: 1rem;
+    /* Ẩn mũi tên của input number */
+    -moz-appearance: textfield;
+}
+
+    .quantity-input::-webkit-outer-spin-button,
+    .quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+
+/* Thanh hành động (Xóa/Cập nhật) */
+.cart-actions-bar {
+    display: flex;
+    justify-content: flex-end; /* Căn sang phải */
+    padding: 20px;
+    align-items: center;
+}
+
+.cart-buttons-area.single {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-update-cart, .btn-delete-cart {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+    .btn-update-cart:hover, .btn-delete-cart:hover {
+        background-color: var(--light-gray);
+    }
+
+.btn-delete-cart {
+    color: var(--primary-red);
+    border-color: #ffdfe2;
+}
+
+    .btn-delete-cart:hover {
+        background-color: #fff8f8;
+    }
+
+    .btn-update-cart img, .btn-delete-cart img {
+        width: 16px;
+        height: 16px;
+    }
+
+
+/* ============================
+   Cột bên phải (Tóm tắt đơn hàng)
+   ============================ */
+.cart-summary-section {
+    position: sticky; /* Giữ cố định khi cuộn */
+    top: 20px;
+}
+
+.summary-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 25px;
+}
+
+    .summary-card h3 {
+        font-size: 1.3rem;
+        color: var(--text-color);
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+/* Tổng cộng */
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+    .summary-total span:first-child {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #555;
+    }
+
+.total-amount-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-red);
+}
+
+/* Nút bấm (Thanh toán, Tiếp tục) */
+.summary-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-checkout, .btn-continue-shopping {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-checkout {
+    background-color: var(--primary-red);
+    color: var(--white);
+}
+
+    .btn-checkout:hover {
+        opacity: 0.85;
+    }
+
+    .btn-checkout img {
+        filter: brightness(0) invert(1);
+        width: 16px;
+    }
+
+.btn-continue-shopping {
+    background-color: var(--light-gray);
+    color: #555;
+    border: 1px solid var(--border-color);
+}
+
+    .btn-continue-shopping:hover {
+        background-color: #e9ecef;
+    }
+
+    .btn-continue-shopping img {
+        width: 16px;
+    }

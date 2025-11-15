@@ -1,68 +1,54 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebBanDienThoai.Models; // Namespace chứa DbContext của bạn
-using Microsoft.AspNetCore.Authentication.Cookies; // <-- THÊM DÒNG NÀY
+using WebBanDienThoai.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lấy chuỗi kết nối từ appsettings.json
+// 1. Lấy chuỗi kết nối
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Đăng ký DbContext với chuỗi kết nối
+// 2. Đăng ký DbContext
 builder.Services.AddDbContext<DemoWebBanDienThoaiContext>(options =>
     options.UseSqlServer(connectionString));
 
-// === THÊM CẤU HÌNH DỊCH VỤ XÁC THỰC COOKIE ===
+// 3. Đăng ký Dịch vụ Xác thực Cookie
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login"; // Đường dẫn đến trang đăng nhập
-        options.LogoutPath = "/Account/Logout"; // Đường dẫn đăng xuất
-        options.AccessDeniedPath = "/Home/Error"; // Trang khi bị cấm truy cập
-        options.ExpireTimeSpan = TimeSpan.FromDays(30); // Thời gian cookie tồn tại
-        options.SlidingExpiration = true; // Gia hạn cookie nếu truy cập
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Home/Error";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
     });
 
-// Thêm dịch vụ để có thể truy cập HttpContext (ví dụ: trong Controller)
 builder.Services.AddHttpContextAccessor();
-// === KẾT THÚC PHẦN THÊM MỚI ===
 
-// Thêm dịch vụ Controller và View (Dòng này đã có)
+// 4. Đăng ký Controller và View
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Cấu hình đường ống (pipeline) cho HTTP request
-// Bật trang báo lỗi chi tiết khi đang phát triển (Development)
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    // Bật trang báo lỗi thân thiện khi đã phát hành (Production)
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-// Tự động chuyển http sang https
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Cho phép dùng file CSS, JS, Ảnh
 
-// Cho phép tải file tĩnh (CSS, JS, Ảnh)
-app.UseStaticFiles();
-
-// Kích hoạt hệ thống định tuyến (Routing)
 app.UseRouting();
 
-// === THÊM MIDDLEWARE XÁC THỰC ===
-// (Phải nằm SAU UseRouting và TRƯỚC UseAuthorization)
+// 5. Kích hoạt Xác thực
 app.UseAuthentication();
-
-// Bật tính năng xác thực/phân quyền (Dòng này đã có)
 app.UseAuthorization();
-// === KẾT THÚC PHẦN THÊM MỚI ===
 
-
-// Ánh xạ route mặc định của bạn (đặt sau UseRouting)
+// 6. Ánh xạ route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

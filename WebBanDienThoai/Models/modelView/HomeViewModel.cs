@@ -64,4 +64,6 @@ namespace WebBanDienThoai.Models.modelView
         // Các sản phẩm khác CÙNG MỘT HÃNG (VD: iPhone 15, iPhone 14...)
         public List<ProductVariant> RelatedProducts { get; set; }
     }
+   
+   
 }
