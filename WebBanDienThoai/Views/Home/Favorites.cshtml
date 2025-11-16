@@ -1,8 +1,7 @@
 ﻿@model WebBanDienThoai.Models.modelView.FavoritesViewModel
-@using System.Security.Claims 
 
 @{
-    Layout = null; // Dòng này vẫn giữ nguyên
+    Layout = null;
     var currentSort = ViewData["CurrentSort"] as string;
 }
 <!DOCTYPE html>
@@ -19,63 +18,38 @@
             <div class="container header-top-container">
                 <a asp-controller="Home" asp-action="Index" class="logo">
                     <h1 class="logo-text">Rabit</h1>
-
                     <img src="~/images/linhvatcau.png" alt="Rabit Mascot" class="logo-mascot">
                     <h1 class="logo-text">Store</h1>
                 </a>
 
                 <form asp-controller="Home" asp-action="Index" method="get" class="search-form" id="favSearchForm">
-
                     <input type="text" name="searchString" placeholder="Tìm kiếm" class="search-input" id="favSearchInput" autocomplete="off">
                     <button type="submit" class="search-button">
                         <img src="~/images/search.png" alt="Search Icon">
                     </button>
                     <div class="search-suggestions" id="favSearchSuggestions"></div>
-
                 </form>
 
                 <div class="header-actions">
                     <a href="#" class="cart-link">
                         <span>Giỏ hàng</span>
-
                         <img src="~/images/giohang.png" alt="Cart Icon">
                     </a>
-
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        // ĐÃ ĐĂNG NHẬP: Hiển thị tên và dropdown
-                        <div class="user-profile-dropdown">
-                            <a href="#" class="user-profile">
-                                <span>@User.FindFirstValue("FullName")</span>
-                                <img src="~/images/user.png" alt="User Icon">
-                            </a>
-                            <div class="dropdown-content">
-                                <a asp-controller="Account" asp-action="Profile">Trang cá nhân</a>
-                                <a asp-controller="Account" asp-action="Logout">Đăng xuất</a>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        // CHƯA ĐĂNG NHẬP: Hiển thị nút Đăng nhập
-                        <a asp-controller="Account" asp-action="Login" class="user-profile">
-                            <span>Đăng nhập</span>
-                            <img src="~/images/user.png" alt="User Icon">
-                        </a>
-                    }
+                    <a href="#" class="user-profile">
+                        <span>Trung</span>
+                        <img src="~/images/user.png" alt="User Icon">
+                    </a>
                 </div>
             </div>
         </div>
         <nav class="main-nav">
             <div class="container nav-container">
                 <a asp-controller="Home" asp-action="Index">Trang chủ</a>
-
                 <a asp-controller="Home" asp-action="Favorites">Yêu thích</a>
                 <a href="#" class="dropdown-link">
                     Danh mục
                     <img src="~/images/chevron-down.png" alt="Dropdown arrow">
                 </a>
-
             </div>
         </nav>
     </header>
@@ -95,13 +69,11 @@
                 </a>
                 <a asp-controller="Home" asp-action="Favorites" asp-route-sortOrder="price_asc"
                    class="sort-btn @(currentSort == "price_asc" ? "active" : "")">
-
                     Giá thấp -> cao
                 </a>
                 <a asp-controller="Home" asp-action="Favorites" asp-route-sortOrder="price_desc"
                    class="sort-btn @(currentSort == "price_desc" ? "active" : "")">
-                    Giá cao
-                    -> thấp
+                    Giá cao -> thấp
                 </a>
             </div>
 
@@ -119,7 +91,6 @@
                                 <p class="product-price">@product.Price.ToString("N0")đ</p>
 
                                 <button class="wishlist-button remove-favorite-button" data-productid="@product.ProductId">
-
                                     <span>➖ Xóa</span>
                                 </button>
                             </div>
@@ -138,124 +109,116 @@
     </section>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-               document.addEventListener('DOMContentLoaded', function() {
+            // --- CODE XỬ LÝ NÚT XÓA YÊU THÍCH (Giữ nguyên) ---
+            const removeButtons = document.querySelectorAll('.remove-favorite-button');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productId = this.dataset.productid;
+                    const buttonElement = this;
+                    const cardElement = buttonElement.closest('.product-card');
 
-                   // --- CODE XỬ LÝ NÚT XÓA YÊU THÍCH (Giữ nguyên) ---
-                   const removeButtons = document.querySelectorAll('.remove-favorite-button');
-                   removeButtons.forEach(button => {
-                       button.addEventListener('click', function(e) {
-                           e.preventDefault();
-
-                           const productId = this.dataset.productid;
-                           const buttonElement = this;
-                           const cardElement = buttonElement.closest('.product-card');
-
-                           fetch('/Home/RemoveFromFavorites/' + productId, { method: 'POST' })
-
-                      .then(response => response.json())
-                           .then(data => {
-                               if(data.success) {
-                                   if (cardElement) cardElement.remove();
-        const remainingCards = document.querySelectorAll('.product-card');
-                                   if (remainingCards.length === 0) {
-                                       const msg = document.getElementById('empty-favorites-message');
-        if(msg) msg.style.display = 'block';
-                                   }
-                               } else {
-                                   alert(data.message);
-        }
-                           })
-                           .catch(error => console.error('Error:', error));
-        });
-                   });
-
-                   // --- (ĐÃ XÓA JAVASCRIPT CỦA CHATBOT) ---
-
-                   // --- THÊM JAVASCRIPT CHO ĐỀ XUẤT TÌM KIẾM ---
-                   const searchInput = document.getElementById('favSearchInput');
-        const suggestionsContainer = document.getElementById('favSearchSuggestions');
-                   const searchForm = document.getElementById('favSearchForm');
-
-                   if (searchInput) {
-                       searchInput.addEventListener('keyup', function() {
-                           const term = this.value;
-
-                           if (term.length < 2) {
-                               suggestionsContainer.innerHTML
-        = '';
-                               suggestionsContainer.style.display = 'none';
-                               return;
-                           }
-
-                           fetch('/Home/SearchSuggestions?term=' + term)
-
-                         .then(response => response.json())
-                               .then(data => {
-                                   suggestionsContainer.innerHTML = '';
-
-           if (data.length > 0) {
-                                       suggestionsContainer.style.display = 'block';
-
-                                       const header = document.createElement('div');
-
-                header.classList.add('suggestion-header');
-                                       header.textContent = 'Sản phẩm gợi ý';
-                                       suggestionsContainer.appendChild(header);
-        data.forEach(product => {
-                                           const suggestionLink = document.createElement('a');
-                                           suggestionLink.classList.add('suggestion-item');
-
-                     suggestionLink.href = `/Home/Index?searchString=${encodeURIComponent(product.name)}`;
-
-                                           const img = document.createElement('img');
-                                           let imageUrl = product.mainImage;
-
-                                     if (imageUrl && !imageUrl.startsWith('http')) {
-                                               imageUrl = imageUrl.replace("~", ""); // Xóa dấu ~
-
+                    fetch('/Home/RemoveFromFavorites/' + productId, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            if (cardElement) cardElement.remove();
+                            const remainingCards = document.querySelectorAll('.product-card');
+                            if (remainingCards.length === 0) {
+                                const msg = document.getElementById('empty-favorites-message');
+                                if(msg) msg.style.display = 'block';
+                            }
+                        } else {
+                            alert(data.message);
                         }
-                                           img.src = imageUrl ? imageUrl : '/images/default-product.png';
-                                           img.alt = product.name;
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
 
+            // --- (ĐÃ XÓA JAVASCRIPT CỦA CHATBOT) ---
 
-                                        const infoDiv = document.createElement('div');
-                                           infoDiv.classList.add('suggestion-item-info');
-        const nameDiv = document.createElement('div');
-                                           nameDiv.classList.add('suggestion-item-name');
-                                           nameDiv.textContent = product.name;
+            // --- THÊM JAVASCRIPT CHO ĐỀ XUẤT TÌM KIẾM ---
+            const searchInput = document.getElementById('favSearchInput');
+            const suggestionsContainer = document.getElementById('favSearchSuggestions');
+            const searchForm = document.getElementById('favSearchForm');
 
-                                           const priceDiv = document.createElement('div');
-                                           priceDiv.classList.add('suggestion-item-price');
-        priceDiv.textContent = product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const term = this.value;
 
-                                           infoDiv.appendChild(nameDiv);
-                                           infoDiv.appendChild(priceDiv);
+                    if (term.length < 2) {
+                        suggestionsContainer.innerHTML = '';
+                        suggestionsContainer.style.display = 'none';
+                        return;
+                    }
 
-                                           suggestionLink.appendChild(img);
-                                           suggestionLink.appendChild(infoDiv);
-        suggestionLink.addEventListener('click', function(e) {
-                                               e.preventDefault();
-                                               searchInput.value = product.name;
+                    fetch('/Home/SearchSuggestions?term=' + term)
+                        .then(response => response.json())
+                        .then(data => {
+                            suggestionsContainer.innerHTML = '';
+                            if (data.length > 0) {
+                                suggestionsContainer.style.display = 'block';
 
-                                searchForm.submit();
-                                           });
-        suggestionsContainer.appendChild(suggestionLink);
-                                       });
-                                   } else {
-                                       suggestionsContainer.style.display = 'none';
-        }
-                               });
+                                const header = document.createElement('div');
+                                header.classList.add('suggestion-header');
+                                header.textContent = 'Sản phẩm gợi ý';
+                                suggestionsContainer.appendChild(header);
+
+                                data.forEach(product => {
+                                    const suggestionLink = document.createElement('a');
+                                    suggestionLink.classList.add('suggestion-item');
+                                    suggestionLink.href = `/Home/Index?searchString=${encodeURIComponent(product.name)}`;
+
+                                    const img = document.createElement('img');
+                                    let imageUrl = product.mainImage;
+                                    if (imageUrl && !imageUrl.startsWith('http')) {
+                                        imageUrl = imageUrl.replace("~", ""); // Xóa dấu ~
+                                    }
+                                    img.src = imageUrl ? imageUrl : '/images/default-product.png';
+                                    img.alt = product.name;
+
+                                    const infoDiv = document.createElement('div');
+                                    infoDiv.classList.add('suggestion-item-info');
+
+                                    const nameDiv = document.createElement('div');
+                                    nameDiv.classList.add('suggestion-item-name');
+                                    nameDiv.textContent = product.name;
+
+                                    const priceDiv = document.createElement('div');
+                                    priceDiv.classList.add('suggestion-item-price');
+                                    priceDiv.textContent = product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+                                    infoDiv.appendChild(nameDiv);
+                                    infoDiv.appendChild(priceDiv);
+
+                                    suggestionLink.appendChild(img);
+                                    suggestionLink.appendChild(infoDiv);
+
+                                    suggestionLink.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        searchInput.value = product.name;
+                                        searchForm.submit();
+                                    });
+
+                                    suggestionsContainer.appendChild(suggestionLink);
+                                });
+                            } else {
+                                suggestionsContainer.style.display = 'none';
+                            }
+                        });
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!searchForm.contains(e.target)) {
+                        suggestionsContainer.style.display = 'none';
+                    }
+                });
+            }
+
         });
-
-                       document.addEventListener('click', function(e) {
-                           if (!searchForm.contains(e.target)) {
-                               suggestionsContainer.style.display = 'none';
-                           }
-                       });
-        }
-
-               });
     </script>
 </body>
 </html>

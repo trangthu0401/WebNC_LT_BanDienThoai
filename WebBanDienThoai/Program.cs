@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebBanDienThoai.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using WebBanDienThoai.Models; // Namespace chứa DbContext của bạn
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,24 +10,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<DemoWebBanDienThoaiContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 3. Đăng ký Dịch vụ Xác thực Cookie
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Home/Error";
-        options.ExpireTimeSpan = TimeSpan.FromDays(30);
-        options.SlidingExpiration = true;
-    });
-
-builder.Services.AddHttpContextAccessor();
-
-// 4. Đăng ký Controller và View
+// Thêm dịch vụ Controller và View
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// --- PHẦN CẤU HÌNH BỊ THIẾU NẰM Ở ĐÂY ---
+
+// Cấu hình đường ống (pipeline) cho HTTP request
+// Bật trang báo lỗi chi tiết khi đang phát triển (Development)
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -40,13 +30,18 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Cho phép dùng file CSS, JS, Ảnh
 
+// DÒNG QUAN TRỌNG: Cho phép tải file tĩnh (CSS, JS, Ảnh)
+app.UseStaticFiles();
+
+// DÒNG QUAN TRỌNG: Kích hoạt hệ thống định tuyến (Routing)
 app.UseRouting();
 
-// 5. Kích hoạt Xác thực
-app.UseAuthentication();
+// (Tùy chọn) Bật tính năng xác thực/phân quyền (nếu có đăng nhập)
 app.UseAuthorization();
+
+// --- KẾT THÚC PHẦN BỊ THIẾU ---
+
 
 // 6. Ánh xạ route
 app.MapControllerRoute(

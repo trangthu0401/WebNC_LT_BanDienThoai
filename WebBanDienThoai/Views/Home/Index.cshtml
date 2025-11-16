@@ -1,5 +1,4 @@
 ﻿@model WebBanDienThoai.Models.modelView.ManageProductsViewModel
-@using System.Security.Claims 
 
 @{
     Layout = null;
@@ -57,42 +56,23 @@
                     <h1 class="logo-text">Store</h1>
                 </a>
                 <form asp-controller="Home" asp-action="Index" method="get" class="search-form" id="mainSearchForm">
-                    <input type="text" name="searchString"
-                                         value="@currentSearch" placeholder="Tìm kiếm" class="search-input" id="mainSearchInput" autocomplete="off">
+                    <input type="text" name="searchString" value="@currentSearch" placeholder="Tìm kiếm" class="search-input" id="mainSearchInput" autocomplete="off">
                     <button type="submit" class="search-button">
                         <img src="~/images/search.png" alt="Search Icon">
                     </button>
                     <input type="hidden" name="id" value="@Model.BrandId" />
                     <div class="search-suggestions" id="mainSearchSuggestions"></div>
                 </form>
-
                 <div class="header-actions">
                     @* === LINK ĐÚNG: Trỏ về Cart/Index === *@
                     <a asp-controller="Cart" asp-action="Index" class="cart-link">
                         <span>Giỏ hàng</span>
                         <img src="~/images/giohang.png" alt="Cart Icon">
                     </a>
-
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="user-profile-dropdown">
-                            <a href="#" class="user-profile">
-                                <span>@User.FindFirstValue("FullName")</span>
-                                <img src="~/images/user.png" alt="User Icon">
-                            </a>
-                            <div class="dropdown-content">
-                                <a asp-controller="Account" asp-action="Profile">Trang cá nhân</a>
-                                <a asp-controller="Account" asp-action="Logout">Đăng xuất</a>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <a asp-controller="Account" asp-action="Login" class="user-profile">
-                            <span>Đăng nhập</span>
-                            <img src="~/images/user.png" alt="User Icon">
-                        </a>
-                    }
+                    <a href="#" class="user-profile">
+                        <span>Trung</span>
+                        <img src="~/images/user.png" alt="User Icon">
+                    </a>
                 </div>
             </div>
         </div>
@@ -158,6 +138,7 @@
 
     <section id="products" class="products-section">
         <div class="container">
+
             <div class="sort-buttons">
                 <span>Sắp xếp theo:</span>
                 <a asp-controller="Home" asp-action="Index" asp-route-id="@Model.BrandId" asp-route-sortOrder="" asp-route-searchString="@currentSearch"
@@ -165,7 +146,7 @@
                     Mới nhất
                 </a>
                 <a asp-controller="Home" asp-action="Index" asp-route-id="@Model.BrandId" asp-route-sortOrder="price_asc" asp-route-searchString="@currentSearch"
-                             class="sort-btn @(currentSort == "price_asc" ? "active" : "")">
+                   class="sort-btn @(currentSort == "price_asc" ? "active" : "")">
                     Giá thấp -> cao
                 </a>
                 <a asp-controller="Home" asp-action="Index" asp-route-id="@Model.BrandId" asp-route-sortOrder="price_desc" asp-route-searchString="@currentSearch"
@@ -221,10 +202,7 @@
             </div>
             <div class="chat-body" id="chatBody">
                 <div class="chat-message bot-message">
-                    <p>
-                        Xin chào!
-                        Bạn muốn tôi gợi ý điện thoại (ví dụ: 'iphone') hay muốn liên hệ trực tiếp (ví dụ: 'zalo', 'sđt')?
-                    </p>
+                    <p>Xin chào! Bạn muốn tôi gợi ý điện thoại (ví dụ: 'iphone') hay muốn liên hệ trực tiếp (ví dụ: 'zalo', 'sđt')?</p>
                 </div>
             </div>
             <div class="chat-input-area">
@@ -243,48 +221,14 @@
     </section>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
 
-            // === HÀM HIỂN THỊ THÔNG BÁO "TOAST" ===
-            function showToast(message, isError = false) {
-                const toastContainer = document.getElementById('toast-container');
-                if (!toastContainer) {
-                    console.error('Lỗi: Không tìm thấy #toast-container');
-                    return;
-                }
-
-                const toast = document.createElement('div');
-                toast.className = 'toast-notification';
-                if (isError) {
-                    toast.classList.add('error');
-                }
-                toast.innerText = message;
-
-                toastContainer.appendChild(toast);
-
-                // Hiển thị toast
-                setTimeout(() => {
-                    toast.classList.add('show');
-                }, 100); // delay 100ms
-
-                // Tự động ẩn sau 3 giây
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    // Xóa hẳn khỏi DOM sau khi mờ đi
-                    setTimeout(() => {
-                        if (toast.parentElement) {
-                            toast.parentElement.removeChild(toast);
-                        }
-                    }, 500);
-                }, 3000);
-            }
-
-            // --- XỬ LÝ NÚT YÊU THÍCH (SỬ DỤNG TOAST) ---
+            // --- SỬA CODE NÚT YÊU THÍCH (Thêm stopPropagation) ---
             const wishlistButtons = document.querySelectorAll('.wishlist-button');
             wishlistButtons.forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // Ngăn thẻ <a> cha bị click
+                    e.stopPropagation(); // Ngăn thẻ <a> cha bị click
 
                     const productId = this.dataset.productid;
                     const buttonElement = this;
@@ -292,42 +236,33 @@
                     const url = isFavorited ? '/Home/RemoveFromFavorites/' + productId : '/Home/AddToFavorites/' + productId;
 
                     fetch(url, { method: 'POST' })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                if (isFavorited) {
-                                    buttonElement.classList.remove('liked');
-                                    buttonElement.innerHTML = '<img src="/images/tym.png" alt="Wishlist heart"> <span>Yêu thích</span>';
-                                    showToast('Đã xóa khỏi danh sách yêu thích');
-                                } else {
-                                    buttonElement.classList.add('liked');
-                                    buttonElement.innerHTML = '<img src="/images/tym.png" alt="Wishlist heart"> <span>Đã thích</span>';
-                                    showToast('Đã thêm vào danh sách yêu thích');
-                                }
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            if(isFavorited) {
+                                buttonElement.classList.remove('liked');
+                                buttonElement.innerHTML = '<img src="/images/tym.png" alt="Wishlist heart"> <span>Yêu thích</span>';
                             } else {
-                                showToast(data.message, true); // Hiển thị toast lỗi
+                                buttonElement.classList.add('liked');
+                                buttonElement.innerHTML = '<img src="/images/tym.png" alt="Wishlist heart"> <span>Đã thích</span>';
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showToast('Lỗi kết nối, vui lòng thử lại.', true);
-                        });
+                        } else { alert(data.message); }
+                    })
+                    .catch(error => console.error('Error:', error));
                 });
             });
 
-            // --- XỬ LÝ CHATBOT (Giữ nguyên) ---
+            // --- (Code Chatbot và Tìm kiếm giữ nguyên) ---
             const fabChatButton = document.getElementById('fabChatButton');
             const chatWindow = document.getElementById('chatWindow');
             const chatCloseButton = document.getElementById('chatCloseButton');
             const chatBody = document.getElementById('chatBody');
             const chatInput = document.getElementById('chatInput');
             const chatSendButton = document.getElementById('chatSendButton');
-
-            if (fabChatButton) fabChatButton.addEventListener('click', () => { chatWindow.classList.toggle('active'); });
-            if (chatCloseButton) chatCloseButton.addEventListener('click', () => { chatWindow.classList.remove('active'); });
-            if (chatSendButton) chatSendButton.addEventListener('click', handleUserMessage);
-            if (chatInput) chatInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { handleUserMessage(); } });
-
+            fabChatButton.addEventListener('click', () => { chatWindow.classList.toggle('active'); });
+            chatCloseButton.addEventListener('click', () => { chatWindow.classList.remove('active'); });
+            chatSendButton.addEventListener('click', handleUserMessage);
+            chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { handleUserMessage(); } });
             function handleUserMessage() {
                 const userInput = chatInput.value.trim();
                 if (userInput === "") return;
@@ -339,20 +274,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: userInput })
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        const loadingMessage = chatBody.querySelector('.loading');
-                        if (loadingMessage) loadingMessage.remove();
-                        appendMessage(data.message, 'bot-message');
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        const loadingMessage = chatBody.querySelector('.loading');
-                        if (loadingMessage) loadingMessage.remove();
-                        appendMessage("Xin lỗi, tôi gặp lỗi kết nối.", 'bot-message');
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    const loadingMessage = chatBody.querySelector('.loading');
+                    if (loadingMessage) loadingMessage.remove();
+                    appendMessage(data.message, 'bot-message');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const loadingMessage = chatBody.querySelector('.loading');
+                    if (loadingMessage) loadingMessage.remove();
+                    appendMessage("Xin lỗi, tôi gặp lỗi kết nối.", 'bot-message');
+                });
             }
-
             function appendMessage(text, className) {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('chat-message', ...className.split(' '));
@@ -361,12 +295,11 @@
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
 
-            // --- XỬ LÝ TÌM KIẾM ---
             const searchInput = document.getElementById('mainSearchInput');
             const suggestionsContainer = document.getElementById('mainSearchSuggestions');
             const searchForm = document.getElementById('mainSearchForm');
             if (searchInput) {
-                searchInput.addEventListener('keyup', function () {
+                searchInput.addEventListener('keyup', function() {
                     const term = this.value;
                     if (term.length < 2) {
                         suggestionsContainer.innerHTML = '';
@@ -406,8 +339,8 @@
                                     infoDiv.appendChild(priceDiv);
                                     suggestionLink.appendChild(img);
                                     suggestionLink.appendChild(infoDiv);
-                                    suggestionLink.addEventListener('click', function (e) {
-                                    e.preventDefault();
+                                    suggestionLink.addEventListener('click', function(e) {
+                                        e.preventDefault();
                                         searchInput.value = product.name;
                                         searchForm.submit();
                                     });
@@ -415,10 +348,10 @@
                                 });
                             } else {
                                 suggestionsContainer.style.display = 'none';
-                            }
+                            }s
                         });
                 });
-                document.addEventListener('click', function (e) {
+                document.addEventListener('click', function(e) {
                     if (!searchForm.contains(e.target)) {
                         suggestionsContainer.style.display = 'none';
                     }
