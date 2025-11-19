@@ -1,0 +1,231 @@
+﻿@model List<WebBanDienThoai.Models.ProductVariant>
+@{
+    ViewData["Title"] = "Danh Sách Sản Phẩm";
+    
+    // 1. KHAI BÁO CÁC BIẾN VIEW BAG
+    // Các biến này được truyền từ ProductsController.Index Action
+    var BrandsList = (SelectList)ViewBag.BrandsList;
+    var StorageOptions = (List<string>)ViewBag.StorageOptions;
+    var RamOptions = (List<string>)ViewBag.RamOptions;
+
+    // Trạng thái lọc/phân trang hiện tại
+    var BrandIdFilter = (int?)ViewBag.BrandIdFilter;
+    var MinPrice = (decimal?)ViewBag.MinPrice;
+    var MaxPrice = (decimal?)ViewBag.MaxPrice;
+    var StorageFilter = (string)ViewBag.StorageFilter;
+    var RamFilter = (string)ViewBag.RamFilter;
+    var SortBy = (string)ViewBag.SortBy;
+    var PageNumber = (int)ViewBag.PageNumber;
+    var TotalPages = (int)ViewBag.TotalPages;
+}
+
+<div class="container my-4">
+    <div class="row">
+
+        @* === Cột Trái: Bộ Lọc === *@
+        <div class="col-lg-3">
+            <h4 class="mb-3">Bộ Lọc Sản Phẩm</h4>
+            <hr />
+
+            @* 2. Sửa Form: Loại bỏ Html.NameFor và dùng tên tham số trực tiếp *@
+            <form method="get" asp-controller="Products" asp-action="Index">
+
+                <div class="mb-4">
+                    <h5>Hãng Sản Xuất</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                               name="BrandIdFilter" @* SỬA: Tên tham số trực tiếp *@
+                               id="brand-all"
+                               value=""
+                               @(BrandIdFilter == null ? "checked" : "") /> @* SỬ DỤNG BrandIdFilter từ ViewBag *@
+                        <label class="form-check-label fw-bold" for="brand-all">Tất Cả</label>
+                    </div>
+                    @foreach (var brand in BrandsList) @* SỬ DỤNG BrandsList từ ViewBag *@
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   name="BrandIdFilter" @* SỬA *@
+                                   id="brand-@brand.Value"
+                                   value="@brand.Value"
+                                   @(BrandIdFilter.HasValue && BrandIdFilter.Value.ToString() == brand.Value ? "checked" : "") />
+                            <label class="form-check-label" for="brand-@brand.Value">@brand.Text</label>
+                        </div>
+                    }
+                </div>
+
+                <div class="mb-4">
+                    <h5>Khoảng Giá (₫)</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <label for="minPrice" class="form-label small">Từ</label>
+                            <input type="number" class="form-control form-control-sm" id="minPrice"
+                                   name="MinPrice" @* SỬA *@
+                                   value="@MinPrice" placeholder="Min Price"> @* SỬ DỤNG MinPrice từ ViewBag *@
+                        </div>
+                        <div class="col-6">
+                            <label for="maxPrice" class="form-label small">Đến</label>
+                            <input type="number" class="form-control form-control-sm" id="maxPrice"
+                                   name="MaxPrice" @* SỬA *@
+                                   value="@MaxPrice" placeholder="Max Price">
+                        </div>
+                    </div>
+                </div>
+
+                @if (StorageOptions != null && StorageOptions.Any()) @* SỬ DỤNG StorageOptions từ ViewBag *@
+                {
+                    <div class="mb-4">
+                        <h5>Bộ Nhớ (Storage)</h5>
+                        @foreach (var storage in StorageOptions)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio"
+                                       name="StorageFilter" @* SỬA *@
+                                       id="storage-@storage"
+                                       value="@storage"
+                                       @(StorageFilter == storage ? "checked" : "") />
+                                <label class="form-check-label" for="storage-@storage">@storage</label>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (RamOptions != null && RamOptions.Any()) @* SỬ DỤNG RamOptions từ ViewBag *@
+                {
+                    <div class="mb-4">
+                        <h5>RAM</h5>
+                        @foreach (var ram in RamOptions)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio"
+                                       name="RamFilter" @* SỬA *@
+                                       id="ram-@ram"
+                                       value="@ram"
+                                       @(RamFilter == ram ? "checked" : "") />
+                                <label class="form-check-label" for="ram-@ram">@ram</label>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr />
+                <button type="submit" class="btn btn-danger w-100 mb-2">Áp Dụng Bộ Lọc</button>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary w-100">Xóa Bộ Lọc</a> @* 3. SỬA TAG HELPER *@
+            </form>
+        </div>
+
+        @* === Cột Phải: Danh Sách Sản Phẩm === *@
+        <div class="col-lg-9">
+
+            @* === THANH SẮP XẾP === *@
+            <div class="d-flex justify-content-end align-items-center mb-3">
+                <label for="sortBySelect" class="me-2 text-nowrap mt-1">Sắp xếp:</label>
+
+                <form method="get" id="sortForm" class="d-flex" asp-controller="Products" asp-action="Index"> @* 3. SỬA TAG HELPER *@
+                    @* Giữ lại các giá trị lọc hiện tại (hidden inputs) *@
+                    <input type="hidden" name="BrandIdFilter" value="@BrandIdFilter" /> @* SỬ DỤNG BrandIdFilter từ ViewBag *@
+                    <input type="hidden" name="MinPrice" value="@MinPrice" />
+                    <input type="hidden" name="MaxPrice" value="@MaxPrice" />
+                    <input type="hidden" name="StorageFilter" value="@StorageFilter" />
+                    <input type="hidden" name="RamFilter" value="@RamFilter" />
+
+                    <select class="form-select form-select-sm" id="sortBySelect" name="SortBy" onchange="document.getElementById('sortForm').submit()">
+                        <option value="Popular" selected="@(SortBy == "Popular")">Phổ biến nhất</option>
+                        <option value="PriceAsc" selected="@(SortBy == "PriceAsc")">Giá: Thấp đến Cao</option>
+                        <option value="PriceDesc" selected="@(SortBy == "PriceDesc")">Giá: Cao đến Thấp</option>
+                        <option value="Newest" selected="@(SortBy == "Newest")">Sản phẩm Mới nhất</option>
+                    </select>
+                </form>
+            </div>
+            @* === KẾT THÚC KHỐI SẮP XẾP === *@
+
+
+            @if (Model.Any()) @* SỬA: Model là danh sách các biến thể *@
+            {
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    @foreach (var variant in Model) @* SỬA: Lặp trực tiếp qua Model *@
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 d-flex flex-column">
+                                <img src="@(variant.ImageUrl ?? variant.Product.MainImage)" class="card-img-top" alt="" style="height: 200px; object-fit: contain;">
+                                <div class="card-body d-flex flex-column">
+                                    <h6 class="card-title text-muted">@variant.Product.Brand.BrandName</h6>
+                                    <p class="card-text fw-bold">@variant.Product.Name (@variant.Color)</p>
+
+                                    <p class="small mb-0 text-black">Chip: @variant.Product.Chipset</p>
+                                    <p class="small mb-2 text-black">Màn hình: @variant.Product.ScreenSize inch</p>
+                                    <p class="small mb-0 text-black">@variant.Ram / @variant.Storage</p>
+
+                                    @* Hiển thị Giá và Giá Khuyến Mãi *@
+                                    @if (variant.DiscountPrice.HasValue && variant.DiscountPrice < variant.Price)
+                                    {
+                                        <p class="text-danger fs-5 fw-bold mb-0 mt-2">@variant.DiscountPrice.Value.ToString("N0")₫</p>
+                                        <p class="text-muted text-decoration-line-through small mb-2">@variant.Price.Value.ToString("N0")₫</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-danger fs-5 fw-bold mb-0 mt-2">@variant.Price?.ToString("N0")₫</p>
+                                        <p class="text-muted small mb-2" style="height: 1.5em; line-height: 1.2;">&nbsp;</p>
+                                    }
+
+                                    @* 3. SỬA TAG HELPER cho nút chi tiết *@
+                                    <a asp-controller="Products" asp-action="Detail" asp-route-id="@variant.VariantId"
+                                       class="btn-list-action w-100 mt-auto"
+                                       style="font-size: 16px !important; text-decoration: none; display: flex; justify-content: center; align-items: center; color: white;">XEM CHI TIẾT & MUA NGAY</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <hr class="mt-4" />
+
+                @* === MÃ PHÂN TRANG (Sửa Tag Helper) === *@
+                <nav aria-label="Product Page Navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(PageNumber <= 1 ? "disabled" : "")">
+                            <a class="page-link" asp-controller="Products" asp-action="Index" 
+                               asp-route-BrandIdFilter="@BrandIdFilter"
+                               asp-route-MinPrice="@MinPrice"
+                               asp-route-MaxPrice="@MaxPrice"
+                               asp-route-StorageFilter="@StorageFilter"
+                               asp-route-RamFilter="@RamFilter"
+                               asp-route-SortBy="@SortBy"
+                               asp-route-PageNumber="@(PageNumber - 1)">Trước</a>
+                        </li>
+
+                        @for (var i = 1; i <= TotalPages; i++)
+                        {
+                            <li class="page-item @(i == PageNumber ? "active" : "")">
+                                <a class="page-link" asp-controller="Products" asp-action="Index" 
+                                   asp-route-BrandIdFilter="@BrandIdFilter"
+                                   asp-route-MinPrice="@MinPrice"
+                                   asp-route-MaxPrice="@MaxPrice"
+                                   asp-route-StorageFilter="@StorageFilter"
+                                   asp-route-RamFilter="@RamFilter"
+                                   asp-route-SortBy="@SortBy"
+                                   asp-route-PageNumber="@i">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(PageNumber >= TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-controller="Products" asp-action="Index"
+                               asp-route-BrandIdFilter="@BrandIdFilter"
+                               asp-route-MinPrice="@MinPrice"
+                               asp-route-MaxPrice="@MaxPrice"
+                               asp-route-StorageFilter="@StorageFilter"
+                               asp-route-RamFilter="@RamFilter"
+                               asp-route-SortBy="@SortBy"
+                               asp-route-PageNumber="@(PageNumber + 1)">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    Không tìm thấy sản phẩm nào phù hợp với các tiêu chí lọc.
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+﻿@model WebBanDienThoai.Models.ProductVariant
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+
+    var AllVariants = (ViewBag.AllVariants as List<WebBanDienThoai.Models.ProductVariant>) ?? new List<WebBanDienThoai.Models.ProductVariant>();
+    var RelatedProducts = (ViewBag.RelatedProducts as List<WebBanDienThoai.Models.ProductVariant>) ?? new List<WebBanDienThoai.Models.ProductVariant>();
+}
+
+<main id="section-product" class="product-section">
+    <div class="container">
+        <h1 class="product-main-title">@Model.Product.Name (@Model.Color) | @Model.Product.Brand.BrandName</h1>
+
+        <div class="product-layout">
+            <div class="product-gallery">
+                <img src="@Model.ImageUrl" alt="@Model.Product.Name" class="product-image">
+            </div>
+            <div class="product-details">
+                <div class="price-card">
+                    <p class="price-label">Giá sản phẩm</p>
+
+                    @* Hiển thị Giá khuyến mãi *@
+                    @if (Model.DiscountPrice.HasValue && Model.DiscountPrice.Value < Model.Price)
+                    {
+                        <p class="price-amount">@Model.DiscountPrice.Value.ToString("N0")đ</p>
+                        <p class="text-muted text-decoration-line-through small">@Model.Price.Value.ToString("N0")đ</p>
+                    }
+                    else
+                    {
+                        <p class="price-amount">@Model.Price.Value.ToString("N0")đ</p>
+                    }
+                </div>
+
+                @* KHỐI PHIÊN BẢN *@
+                <div class="option-group">
+                    <h3 class="option-title">Phiên bản</h3>
+                    <div class="option-buttons">
+                        @{
+                            // SỬ DỤNG AllVariants từ ViewBag
+                            var uniqueConfigs = AllVariants
+                            .GroupBy(v => new { v.Ram, v.Storage })
+                            .Select(g => g.First())
+                            .OrderBy(v => v.Ram);
+                        }
+
+                        @foreach (var variant in uniqueConfigs)
+                        {
+                            var isActive = (variant.Ram == Model.Ram && variant.Storage == Model.Storage) ? "active" : "";
+
+                            <button class="option-btn @isActive">
+                                @variant.Ram / @variant.Storage
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                @* KHỐI MÀU SẮC *@
+                <div class="option-group">
+                    <h3 class="option-title">Màu sắc</h3>
+                    <div class="color-grid">
+                        @{
+                            // SỬ DỤNG AllVariants từ ViewBag
+                            var uniqueColors = AllVariants
+                            .GroupBy(v => v.Color)
+                            .Select(g => g.First());
+                        }
+
+                        @foreach (var variant in uniqueColors)
+                        {
+                            var isActive = (variant.Color == Model.Color) ? "active" : "";
+
+                            <a asp-controller="Products"
+                               asp-action="Detail"
+                               asp-route-id="@variant.VariantId"
+                               class="color-option @isActive">
+
+                                <div class="color-info">
+                                    <span class="color-name">@variant.Color</span>
+                                    <span class="color-price">@variant.Price.Value.ToString("N0")đ</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                @* KHỐI NÚT ACTION *@
+                <div class="action-buttons">
+                    <button class="btn btn-primary" style="display: flex;
+                            align-items: center;
+                            justify-content: center;">
+                        Mua ngay
+                    </button>
+                    <button class="btn btn-primary btn-contact">
+                        Liên hệ
+                        <img src="~/Images/lienhe.png" alt="Contact Icon">
+                    </button>
+                    <button class="btn btn-icon">
+                        <img src="~/Images/Cart.png" alt="Add to cart icon">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<section id="section-specs" class="specs-section">
+    <div class="container">
+        <h2 class="section-title">Thông số kỹ thuật</h2>
+        <div class="specs-grid">
+
+            <div class="spec-item spec-label">Kích thước màn hình</div>
+            <div class="spec-item spec-value">
+                @Model.Product.ScreenSize inches 
+            </div>
+
+            <div class="spec-item spec-label">Công nghệ màn hình</div>
+            <div class="spec-item spec-value">
+                @Model.Product.ScreenTech 
+            </div>
+
+            <div class="spec-item spec-label">Chipset</div>
+            <div class="spec-item spec-value">
+                @Model.Product.Chipset 
+            </div>
+
+            <div class="spec-item spec-label">Hệ điều hành</div>
+            <div class="spec-item spec-value">
+                @Model.Product.OperatingSystem 
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="description-section container">
+    <h2 class="section-title">Chi tiết Sản phẩm</h2>
+    <div class="product-description-content">
+        @Html.Raw(Model.Product.Description) 
+    </div>
+</section>
+
+<section id="section-related" class="related-section">
+    <div class="container">
+        <h2 class="section-title">Sản phẩm Tương tự</h2>
+
+        @if (RelatedProducts.Any()) @* SỬ DỤNG RelatedProducts từ ViewBag *@
+        {
+            <div class="row row-cols-1 row-cols-md-4 g-4">
+                @foreach (var variant in RelatedProducts)
+                {
+                    <div class="col">
+                        <div class="product-card-list h-100">
+
+                            <div class="card-img-container">
+                                <img src="@variant.ImageUrl" class="card-img-top" alt="@variant.Product.Name">
+                            </div>
+
+                            <div class="product-info-list">
+                                <p class="product-brand">@variant.Product.Brand.BrandName</p>
+                                <p class="product-list-title">
+                                    @variant.Product.Name (@variant.Color)
+                                </p>
+
+                                <p class="product-spec-line">
+                                    @variant.Ram / @variant.Storage
+                                </p>
+
+                                @* 3. Giá *@
+                                @{
+                                    var displayPrice = variant.DiscountPrice.HasValue ? variant.DiscountPrice.Value : variant.Price.Value;
+                                }
+                                <p class="product-price-amount">@displayPrice.ToString("N0")₫</p>
+
+                                @* 4. Nút Xem chi tiết *@
+                                <a asp-controller="Products"
+                                   asp-action="Detail"
+                                   asp-route-id="@variant.VariantId"
+                                   class="btn-list-action">
+                                    XEM CHI TIẾT
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Không tìm thấy sản phẩm tương tự cùng hãng.</p>
+        }
+    </div>
+</section>
