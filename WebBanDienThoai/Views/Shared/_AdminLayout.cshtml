@@ -1,0 +1,295 @@
+﻿@using System.Security.Claims
+@{
+    Layout = null; // Không lồng layout vào layout khác
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    
+    // --- LOGIC LẤY TÊN VÀ CHỮ CÁI ĐẦU (TỪ CLAIM) ---
+    string userInitial = "?";
+    string userFullName = "Guest";
+
+    if (User.Identity.IsAuthenticated)
+    {
+        // Lấy Tên Đầy Đủ (FullName) từ Claim
+        userFullName = User.FindFirstValue(ClaimTypes.GivenName) ?? User.Identity.Name;
+        if (!string.IsNullOrEmpty(userFullName))
+        {
+            userInitial = userFullName.Trim().Substring(0, 1).ToUpper();
+        }
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Rabit Store</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Trong head -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="~/css/master.css" rel="stylesheet" />
+    <link href="~/css/tableStyle.css?v=7" rel="stylesheet" />
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <img src="~/images/logo.png" alt="Rabit Store Logo" class="logo" />
+        </div>
+
+        <div class="header-right">
+            <div class="header-search">
+                <input type="text" placeholder="Tìm kiếm..." />
+            </div>
+
+            <div class="header-icons">
+                <i class="fa-regular fa-bell"></i>
+                <i class="fa-solid fa-gear"></i>
+
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-initial">@userInitial</div>
+                    </a>
+                
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">@userFullName</h6></li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                <i class="bi bi-person-circle"></i>
+                                Trang cá nhân
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <nav class="sidebar">
+            <a href="~/Dashboard/Index" class="@(currentController == "Dashboard" ? "active" : "")">
+                <i class="fa-solid fa-chart-line"></i> Tổng quan
+            </a>
+            
+            <a href="~/Product/Index" class="@((currentController == "Product" || currentController == "ProductVariant") ? "active" : "")">
+                <i class="fa-solid fa-box"></i> Sản phẩm
+            </a>
+            
+            <a href="~/Customer/Index" class="@(currentController == "Customer" ? "active" : "")">
+                <i class="fa-solid fa-user"></i> Khách hàng
+            </a>
+            
+            <a href="~/Order/Index" class="@(currentController == "Order" ? "active" : "")">
+                <i class="fa-solid fa-cube"></i> Đơn hàng
+            </a>
+        </nav>
+
+        <main class="content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div class="modal fade" id="confirmationModal" tabindex="-1"
+         aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="confirmationModalHeader">
+                    <h5 class="modal-title" id="confirmationModalLabel">Xác nhận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmationModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-primary" id="confirmModalConfirmButton">
+                        <span id="confirmModalActionButtonText">Xác nhận</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reusableModal" tabindex="-1"
+         aria-labelledby="reusableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reusableModalLabel">Thông báo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="reusableModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đã hiểu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @{
+        // Đọc TempData từ server
+        var successMessage = TempData["SuccessMessage"] as string;
+        var errorMessage = TempData["ErrorMessage"] as string;
+    }
+
+    <script>
+        // Chờ cho toàn bộ trang tải xong
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var message = null;
+            var isError = false;
+            var title = 'Thông báo';
+
+            // 1. Kiểm tra xem có thông báo nào không
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <text>
+                    message = @Html.Raw(Json.Serialize(successMessage));
+                    title = 'Thành công';
+                </text>
+            }
+            else if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <text>
+                    message = @Html.Raw(Json.Serialize(errorMessage));
+                    title = 'Có lỗi xảy ra';
+                    isError = true;
+                </text>
+            }
+
+            // 2. Nếu có thông báo -> Kích hoạt Modal
+            if (message) {
+                var modalElement = document.getElementById('reusableModal');
+                var modalTitle = document.getElementById('reusableModalLabel');
+                var modalBody = document.getElementById('reusableModalBody');
+                var modalHeader = modalElement.querySelector('.modal-header');
+
+                modalTitle.innerText = title;
+                modalBody.innerText = message;
+
+                modalHeader.classList.remove('bg-success', 'bg-danger', 'text-white');
+
+                if (isError) {
+                    modalHeader.classList.add('bg-danger', 'text-white');
+                } else {
+                    modalHeader.classList.add('bg-success', 'text-white');
+                }
+
+                var myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmModalElement = document.getElementById('confirmationModal');
+
+            if (confirmModalElement) {
+                const confirmModal = new bootstrap.Modal(confirmModalElement);
+                const confirmModalTitle = document.getElementById('confirmationModalLabel');
+                const confirmModalBody = document.getElementById('confirmationModalBody');
+                const confirmModalConfirmButton = document.getElementById('confirmModalConfirmButton');
+                const confirmModalActionButtonText = document.getElementById('confirmModalActionButtonText');
+                const confirmModalHeader = document.getElementById('confirmationModalHeader');
+
+                let formToSubmit = null; 
+
+                const formsToConfirm = document.querySelectorAll('form[data-confirm="true"]');
+
+                formsToConfirm.forEach(form => {
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        formToSubmit = form;
+
+                        const message = form.getAttribute('data-confirm-message') || 'Bạn có chắc chắn muốn thực hiện hành động này?';
+                        const title = form.getAttribute('data-confirm-title') || 'Xác nhận';
+                        const buttonText = form.getAttribute('data-confirm-button-text') || 'Xác nhận';
+                        const buttonClass = form.getAttribute('data-confirm-button-class') || 'btn-primary'; 
+                        const headerClass = form.getAttribute('data-confirm-header-class') || ''; 
+
+                        confirmModalTitle.innerText = title;
+                        confirmModalBody.innerText = message;
+                        confirmModalActionButtonText.innerText = buttonText;
+
+                        confirmModalConfirmButton.className = "btn"; 
+                        confirmModalConfirmButton.classList.add(buttonClass);
+
+                        confirmModalHeader.className = "modal-header"; 
+                        if(headerClass) {
+                             headerClass.split(' ').forEach(cls => confirmModalHeader.classList.add(cls));
+                        }
+                        
+                        confirmModal.show();
+                    });
+                });
+
+                confirmModalConfirmButton.addEventListener('click', function () {
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                    confirmModal.hide();
+                    formToSubmit = null; 
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Tìm avatar
+            const avatar = document.querySelector('.avatar-initial');
+            if (!avatar) return; // Thoát nếu không tìm thấy
+
+            // 2. Lấy tên người dùng (từ Claim đã lưu)
+            const userName = '@userFullName'; // Lấy tên từ C#
+
+            // 3. Danh sách màu (các màu đẹp, không lấy màu trắng/sáng)
+            const colors = [
+                '#dc3545', // Đỏ
+                '#0d6efd', // Xanh dương
+                '#198754', // Xanh lá
+                '#6f42c1', // Tím
+                '#fd7e14', // Cam
+                '#d63384', // Hồng
+                '#20c997', // Xanh ngọc
+                '#6610f2'  // Chàm
+            ];
+
+            // 4. Hàm "băm" (hash) tên thành một số
+            // (Đảm bảo tên "Admin" luôn ra 1 số, "Quản Trị Viên" luôn ra 1 số khác)
+            let hash = 0;
+            if (userName.length === 0) return;
+            for (let i = 0; i < userName.length; i++) {
+                let char = userName.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Chuyển đổi sang 32bit
+            }
+
+            // 5. Dùng số hash đó để chọn 1 màu cố định trong danh sách
+            const colorIndex = Math.abs(hash) % colors.length;
+            const randomColor = colors[colorIndex];
+
+            // 6. Gán màu đó cho avatar
+            avatar.style.backgroundColor = randomColor;
+            avatar.style.borderColor = randomColor; // Viền cũng theo màu đó
+        });
+    </script>
+
+</body>
+
+
+</html>
