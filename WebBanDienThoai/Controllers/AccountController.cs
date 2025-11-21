@@ -195,5 +195,23 @@ namespace WebBanDienThoai.Controllers
 
             return RedirectToAction("Details", "Customer", new { id = customerId });
         }
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // TODO: Gửi email reset password
+            TempData["SuccessMessage"] = "Liên kết đặt lại mật khẩu đã được gửi tới email của bạn.";
+            return RedirectToAction("ForgotPassword");
+        }
     }
 }
