@@ -1,4 +1,4 @@
-﻿@* SỬA 1: Chỉnh lại namespace cho đúng với file AccountViewModels.cs *@
+﻿﻿@* SỬA 1: Chỉnh lại namespace cho đúng với file AccountViewModels.cs *@
 @model WebBanDienThoai.ViewModels.LoginViewModel
 
 @{
@@ -75,7 +75,7 @@
                         <input asp-for="RememberMe" class="form-check-input" />
                         <label asp-for="RememberMe" class="form-check-label"></label>
                     </div>
-                    <a href="#" class="text-decoration-none">Quên mật khẩu?</a>
+                    <a asp-controller="Account" asp-action="ForgotPassword" class="text-decoration-none">Quên mật khẩu?</a>
                 </div>
 
                 <div class="form-check mb-3">

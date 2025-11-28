@@ -1,7 +1,6 @@
 ﻿@model WebBanDienThoai.Models.ViewModels.ProductVariantIndexViewModel
 
 @{
-    // GHI CHÚ: Đã đổi Model
     ViewData["Title"] = "Chi tiết: " + Model.Product.Name;
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
@@ -9,7 +8,6 @@
 <div class="products-container">
 
     <div class="mb-3">
-        <!-- GHI CHÚ: Đường dẫn này trỏ về ProductController, là đúng -->
         <a href="@Url.Action("Index", "Product")" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 5px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
@@ -95,7 +93,7 @@
                                 <td>@variant.Color</td>
                                 <td>@variant.Storage</td>
                                 <td>@variant.RAM</td>
-                                <td class="text-end @(variant.DiscountPrice.HasValue? "text-decoration-line-through text-muted" : "fw-bold")">
+                                <td class="text-end @(variant.DiscountPrice.HasValue ? "text-decoration-line-through text-muted" : "fw-bold")">
                                     @String.Format("{0:N0}", variant.Price) đ
                                 </td>
                                 <td class="text-end fw-bold text-danger">
@@ -125,16 +123,8 @@
                                             <img src="/images/Admin/Product/edit.png" alt="Edit">
                                         </button>
 
-                                        @* Nút Xóa (Kích hoạt Modal Xóa) *@
-                                        <button type="button"
-                                                class="btn-delete"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#deleteVariantModal"
-                                                data-variant-id="@variant.VariantId"
-                                                data-variant-name="@(variant.Color) @(variant.Storage)"
-                                                title="Xóa biến thể này">
-                                            <img src="/images/Admin/Product/delete.png" alt="Delete">
-                                        </button>
+                                        @* Nút Xóa (Đã comment theo code cũ của bạn) *@
+                                        @* <button type="button" class="btn-delete" ... ><img src="..." /></button> *@
                                     </div>
                                 </td>
                             </tr>
@@ -163,11 +153,9 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <!-- GHI CHÚ: Đã sửa asp-action="Create" và asp-controller="ProductVariant" -->
             <form asp-action="Create" asp-controller="ProductVariant" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <!-- GHI CHÚ: Đã sửa asp-for trỏ vào CreateForm -->
                     <input type="hidden" asp-for="CreateForm.ProductId" />
 
                     <div class="row">
@@ -188,18 +176,22 @@
                         </div>
                         <div class="col-md-6 border-start">
                             <h6 class="mb-3 text-danger">Giá & Tồn kho</h6>
+
                             <div class="mb-3">
                                 <label asp-for="CreateForm.Price" class="form-label">Giá bán gốc (vnd)</label>
-                                <input asp-for="CreateForm.Price" type="number" step="1000" min="0" class="form-control" required>
+                                <input asp-for="CreateForm.Price" type="text" class="form-control" placeholder="15000000" required>
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="CreateForm.DiscountPrice" class="form-label">Giá khuyến mãi (vnd - Để trống nếu không KM)</label>
-                                <input asp-for="CreateForm.DiscountPrice" type="number" step="1000" min="0" class="form-control">
+                                <input asp-for="CreateForm.DiscountPrice" type="text" class="form-control" placeholder="14000000">
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="CreateForm.Stock" class="form-label">Số lượng tồn kho</label>
-                                <input asp-for="CreateForm.Stock" type="number" min="0" class="form-control" required>
+                                <input asp-for="CreateForm.Stock" type="text" class="form-control" placeholder="10" required>
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="CreateForm.ImageFile" class="form-label">Ảnh Biến thể (Tùy chọn)</label>
                                 <input asp-for="CreateForm.ImageFile" class="form-control" type="file">
@@ -260,8 +252,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <!-- GHI CHÚ: Đã sửa asp-action="Edit" và asp-controller="ProductVariant" -->
-            <!-- GHI CHÚ: Form này đã tương thích với ProductVariantEditViewModel -->
             <form asp-action="Edit" asp-controller="ProductVariant" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
@@ -286,17 +276,20 @@
                         </div>
                         <div class="col-md-6 border-start">
                             <h6 class="mb-3 text-primary">Giá & Tồn kho</h6>
+
                             <div class="mb-3">
                                 <label for="edit-variant-price" class="form-label">Giá bán gốc (vnd)</label>
-                                <input type="number" step="1000" min="0" class="form-control" id="edit-variant-price" name="Price" required>
+                                <input type="text" class="form-control" id="edit-variant-price" name="Price" required>
                             </div>
+
                             <div class="mb-3">
                                 <label for="edit-variant-discount" class="form-label">Giá khuyến mãi (vnd)</label>
-                                <input type="number" step="1000" min="0" class="form-control" id="edit-variant-discount" name="DiscountPrice">
+                                <input type="text" class="form-control" id="edit-variant-discount" name="DiscountPrice">
                             </div>
+
                             <div class="mb-3">
                                 <label for="edit-variant-stock" class="form-label">Số lượng tồn kho</label>
-                                <input type="number" min="0" class="form-control" id="edit-variant-stock" name="Stock" required>
+                                <input type="text" class="form-control" id="edit-variant-stock" name="Stock" required>
                             </div>
                         </div>
                     </div>
@@ -329,7 +322,7 @@
                         this.value = numericValue[0] + 'GB';
                     }
                     else {
-                        this.value = ''; // Xóa nếu không phải là số
+                        // this.value = ''; // Tùy chọn: Xóa nếu không phải là số
                     }
                 }
             });
@@ -368,7 +361,7 @@
                 var id = button.getAttribute('data-variant-id');
                 var color = button.getAttribute('data-variant-color');
                 var storage = button.getAttribute('data-variant-storage');
-                var ram = button.getAttribute('data-variant-ram'); // Có thể null
+                var ram = button.getAttribute('data-variant-ram');
                 var price = button.getAttribute('data-variant-price');
                 var discount = button.getAttribute('data-variant-discount');
                 var stock = button.getAttribute('data-variant-stock');
@@ -389,10 +382,8 @@
                 if(colorInput) colorInput.value = color;
 
                 // Xử lý "GB" trước khi gán
-                if(storageInput) storageInput.value = storage.replace('GB', '');
-
-                // GHI CHÚ: Đã sửa lỗi JS (ram có thể null)
-                if(ramInput) ramInput.value = (ram ? ram.replace('GB', '') : '');
+                if(storageInput) storageInput.value = storage ? storage.replace('GB', '') : '';
+                if(ramInput) ramInput.value = ram ? ram.replace('GB', '') : '';
 
                 if(priceInput) priceInput.value = price;
                 if(discountInput) discountInput.value = discount;

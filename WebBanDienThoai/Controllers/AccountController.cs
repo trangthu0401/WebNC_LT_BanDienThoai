@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using BCrypt.Net;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,21 +7,22 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebBanDienThoai.Data;
 using WebBanDienThoai.Models;
+using WebBanDienThoai.Models.ViewModels;
 using WebBanDienThoai.ViewModels;
-using BCrypt.Net;
 
 namespace WebBanDienThoai.Controllers
 {
     public class AccountController : Controller
     {
         private readonly DemoWebBanDienThoaiDbContext _context;
+        private readonly EmailSender _emailSender;
 
-        public AccountController(DemoWebBanDienThoaiDbContext context)
+        public AccountController(DemoWebBanDienThoaiDbContext context, EmailSender emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
 
-        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
@@ -31,14 +33,11 @@ namespace WebBanDienThoai.Controllers
             return View();
         }
 
-        // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
-
-            // Tìm Account + Customer
             var account = await _context.Accounts
                 .Include(a => a.Customer)
                 .FirstOrDefaultAsync(a =>
@@ -48,28 +47,23 @@ namespace WebBanDienThoai.Controllers
             if (account != null && BCrypt.Net.BCrypt.Verify(model.Password, account.Password))
             {
                 var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, account.Email),
-        new Claim(ClaimTypes.Role, account.Role),
-    };
+                {
+                    new Claim(ClaimTypes.Name, account.Email),
+                    new Claim(ClaimTypes.Role, account.Role),
+                };
 
-                // --- SỬA ĐOẠN NÀY ---
                 if (account.Customer != null)
                 {
-                    // QUAN TRỌNG: Lưu CUSTOMER_ID (số 7) vào NameIdentifier
-                    // Tuyệt đối không lưu account.AccountID (số 8) vào đây nữa
                     claims.Add(new Claim(ClaimTypes.NameIdentifier, account.Customer.CustomerID.ToString()));
-
                     claims.Add(new Claim("FullName", account.Customer.FullName));
-                    claims.Add(new Claim("AccountID", account.AccountID.ToString())); // Lưu AccountID sang claim khác để backup
+                    claims.Add(new Claim("AccountID", account.AccountID.ToString()));
                 }
                 else
                 {
-                    // Nếu là Admin (không có Customer), lưu AccountID
                     claims.Add(new Claim(ClaimTypes.NameIdentifier, account.AccountID.ToString()));
                     claims.Add(new Claim("FullName", "Quản trị viên"));
+                    claims.Add(new Claim("AccountID", account.AccountID.ToString()));
                 }
-                // --------------------
 
                 await SignInUserAsync(claims, model.RememberMe);
 
@@ -79,11 +73,11 @@ namespace WebBanDienThoai.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError(string.Empty, "Sai thông tin đăng nhập.");
+            ModelState.AddModelError(string.Empty, "Sai thông tin đăng nhập hoặc tài khoản bị khóa.");
             return View(model);
         }
 
-        // GET: /Account/Register
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -92,7 +86,6 @@ namespace WebBanDienThoai.Controllers
             return View();
         }
 
-        // POST: /Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -148,7 +141,98 @@ namespace WebBanDienThoai.Controllers
             }
         }
 
-        // GET: /Account/Profile
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == model.Email);
+
+            if (account == null)
+            {
+
+                ViewBag.Message = "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.";
+                return View();
+            }
+
+
+            string token = Guid.NewGuid().ToString();
+
+
+            var callbackUrl = Url.Action("ResetPassword", "Account",
+                new { email = model.Email, token = token }, protocol: HttpContext.Request.Scheme);
+
+            string emailBody = $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                    <h2>Rabit Store - Yêu cầu đặt lại mật khẩu</h2>
+                    <p>Xin chào,</p>
+                    <p>Bạn nhận được email này vì hệ thống nhận được yêu cầu lấy lại mật khẩu cho tài khoản: <strong>{model.Email}</strong></p>
+                    <p>Vui lòng nhấn vào nút bên dưới để tạo mật khẩu mới:</p>
+                    <a href='{callbackUrl}' style='display: inline-block; padding: 10px 20px; background-color: #0d6efd; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;'>Đặt lại mật khẩu ngay</a>
+                    <p style='margin-top: 20px; color: #666;'>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email.</p>
+                </div>";
+
+            try
+            {
+
+                await _emailSender.SendEmailAsync(model.Email, "Rabit Store - Quên mật khẩu", emailBody);
+
+                ViewBag.Message = "Đã gửi email hướng dẫn. Vui lòng kiểm tra hộp thư (bao gồm cả mục Spam).";
+            }
+            catch (Exception ex)
+            {
+
+                ModelState.AddModelError("", "Không thể gửi email do lỗi máy chủ. Vui lòng thử lại sau.");
+                return View(model);
+            }
+
+            return View();
+        }
+
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login");
+            }
+            var model = new ResetPasswordViewModel { Email = email, Token = token };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == model.Email);
+
+            if (account != null)
+            {
+
+                account.Password = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+
+                _context.Accounts.Update(account);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login");
+            }
+
+            ModelState.AddModelError("", "Đã xảy ra lỗi. Không tìm thấy tài khoản.");
+            return View(model);
+        }
+
+
         [Authorize]
         [HttpGet]
         [Route("/Account/Profile")]
@@ -156,19 +240,12 @@ namespace WebBanDienThoai.Controllers
         {
             try
             {
-                Console.WriteLine("🔍 Profile GET action called");
-
                 var accountId = int.Parse(User.FindFirstValue("AccountID"));
-
                 var account = await _context.Accounts
                     .Include(a => a.Customer)
                     .FirstOrDefaultAsync(a => a.AccountID == accountId);
 
-                if (account == null || account.Customer == null)
-                {
-                    Console.WriteLine("❌ Account or Customer not found");
-                    return NotFound();
-                }
+                if (account == null || account.Customer == null) return NotFound();
 
                 var model = new AccountViewModels
                 {
@@ -178,19 +255,11 @@ namespace WebBanDienThoai.Controllers
                     Gender = account.Customer.Gender,
                     BirthDate = account.Customer.BirthDate
                 };
-
-                Console.WriteLine("✅ Profile data loaded successfully");
                 return View(model);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error in Profile GET: {ex.Message}");
-                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                return RedirectToAction("Error", "Home");
-            }
+            catch { return RedirectToAction("Error", "Home"); }
         }
 
-        // POST: /Account/Profile
         [Authorize]
         [HttpPost]
         [Route("/Account/Profile")]
@@ -199,36 +268,24 @@ namespace WebBanDienThoai.Controllers
         {
             try
             {
-                Console.WriteLine("🔍 Profile POST action called");
-
-                if (!ModelState.IsValid)
-                {
-                    Console.WriteLine("❌ ModelState invalid");
-                    return View(model);
-                }
+                if (!ModelState.IsValid) return View(model);
 
                 var accountId = int.Parse(User.FindFirstValue("AccountID"));
-
                 var account = await _context.Accounts
                     .Include(a => a.Customer)
                     .FirstOrDefaultAsync(a => a.AccountID == accountId);
 
-                if (account == null || account.Customer == null)
-                {
-                    Console.WriteLine("❌ Account or Customer not found in POST");
-                    return NotFound();
-                }
+                if (account == null || account.Customer == null) return NotFound();
 
-                // Kiểm tra số điện thoại đã tồn tại chưa (trừ chính tài khoản hiện tại)
+
                 if (!string.IsNullOrEmpty(model.Phone) &&
                     await _context.Customers.AnyAsync(c => c.Phone == model.Phone && c.CustomerID != account.Customer.CustomerID))
                 {
                     ModelState.AddModelError("Phone", "Số điện thoại đã được sử dụng bởi tài khoản khác.");
-                    Console.WriteLine("❌ Phone number already exists");
                     return View(model);
                 }
 
-                // Cập nhật thông tin
+
                 account.Customer.FullName = model.FullName;
                 account.Customer.Phone = model.Phone;
                 account.Customer.Gender = model.Gender;
@@ -237,50 +294,55 @@ namespace WebBanDienThoai.Controllers
                 _context.Customers.Update(account.Customer);
                 await _context.SaveChangesAsync();
 
-                // Cập nhật claim FullName nếu có thay đổi
+                // Cập nhật lại Cookie (để hiện tên mới ngay lập tức)
                 if (User.FindFirstValue("FullName") != model.FullName)
                 {
                     await UpdateFullNameClaim(model.FullName);
                 }
 
                 TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
-                Console.WriteLine("✅ Profile updated successfully");
                 return RedirectToAction("Profile");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error in Profile POST: {ex.Message}");
-                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
                 ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
                 return View(model);
             }
         }
 
-        // Hàm hỗ trợ cập nhật claim FullName
-        private async Task UpdateFullNameClaim(string fullName)
-        {
-            var identity = (ClaimsIdentity)User.Identity;
-            var existingClaim = identity.FindFirst("FullName");
 
-            if (existingClaim != null)
-            {
-                identity.RemoveClaim(existingClaim);
-            }
-
-            identity.AddClaim(new Claim("FullName", fullName));
-
-            var principal = new ClaimsPrincipal(identity);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-        }
-
-        // GET: /Account/Logout
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
 
-        // Hàm hỗ trợ đăng nhập
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleActive(int accountId, int customerId)
+        {
+            var account = await _context.Accounts.FindAsync(accountId);
+            if (account == null) return NotFound();
+
+            account.IsActive = !account.IsActive;
+
+            try
+            {
+                _context.Accounts.Update(account);
+                await _context.SaveChangesAsync();
+                string statusMessage = account.IsActive ? "mở khóa" : "khóa";
+                TempData["SuccessMessage"] = $"Đã {statusMessage} tài khoản '{account.Email}' thành công.";
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái tài khoản.";
+            }
+
+            return RedirectToAction("Details", "Customer", new { id = customerId });
+        }
+
+
         private async Task SignInUserAsync(List<Claim> claims, bool isPersistent)
         {
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -293,44 +355,16 @@ namespace WebBanDienThoai.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProps);
         }
 
-        // POST: ToggleActive (cho admin)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleActive(int accountId, int customerId)
+
+        private async Task UpdateFullNameClaim(string fullName)
         {
-            var account = await _context.Accounts.FindAsync(accountId);
+            var identity = (ClaimsIdentity)User.Identity;
+            var existingClaim = identity.FindFirst("FullName");
+            if (existingClaim != null) identity.RemoveClaim(existingClaim);
+            identity.AddClaim(new Claim("FullName", fullName));
 
-            if (account == null)
-            {
-                return NotFound();
-            }
-
-            account.IsActive = !account.IsActive;
-
-            try
-            {
-                _context.Accounts.Update(account);
-                await _context.SaveChangesAsync();
-
-                string statusMessage = account.IsActive ? "mở khóa" : "khóa";
-                TempData["SuccessMessage"] = $"Đã {statusMessage} tài khoản '{account.Email}' thành công.";
-            }
-            catch (DbUpdateException ex)
-            {
-                Console.WriteLine(ex.Message);
-                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái tài khoản.";
-            }
-
-            return RedirectToAction("Details", "Customer", new { id = customerId });
-        }
-
-        // Test route - tạm thời để kiểm tra
-        [HttpGet]
-        [Route("/Account/Test")]
-        public IActionResult Test()
-        {
-            Console.WriteLine("✅ Test route works!");
-            return Content("Test route works! - AccountController is working");
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
     }
 }

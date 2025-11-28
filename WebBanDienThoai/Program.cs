@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebBanDienThoai.Data;
+using WebBanDienThoai.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,7 @@ builder.Services.AddDbContext<DemoWebBanDienThoaiDbContext>(options =>
 
 // 2. Services
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddTransient<EmailSender>();
 // 3. AUTHENTICATION (QUAN TRỌNG)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

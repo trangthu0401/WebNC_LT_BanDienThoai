@@ -138,31 +138,35 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            // --- A. Xử lý Thông báo từ TempData (Backend trả về) ---
-            var successMsg = '@Html.Raw(TempData["SuccessMessage"] ?? "")';
-            var errorMsg = '@Html.Raw(TempData["ErrorMessage"] ?? "")';
+            // --- A. Xử lý Thông báo từ TempData (ĐÃ SỬA LỖI) ---
+            // Sử dụng Json.Serialize để tự động xử lý dấu nháy đơn/kép an toàn
+            var successMsg = @Json.Serialize(TempData["SuccessMessage"]);
+            var errorMsg = @Json.Serialize(TempData["ErrorMessage"]);
 
             if (successMsg || errorMsg) {
                 var modalEl = document.getElementById('reusableModal');
-                var title = document.getElementById('reusableModalLabel');
-                var body = document.getElementById('reusableModalBody');
-                var header = modalEl.querySelector('.modal-header');
+                // Kiểm tra nếu modal tồn tại để tránh lỗi null
+                if (modalEl) {
+                    var title = document.getElementById('reusableModalLabel');
+                    var body = document.getElementById('reusableModalBody');
+                    var header = modalEl.querySelector('.modal-header');
 
-                // Reset class
-                header.classList.remove('bg-success', 'bg-danger', 'text-white');
+                    // Reset class
+                    header.classList.remove('bg-success', 'bg-danger', 'text-white');
 
-                if (errorMsg) {
-                    title.innerText = "Có lỗi xảy ra";
-                    body.innerText = errorMsg;
-                    header.classList.add('bg-danger', 'text-white');
-                } else {
-                    title.innerText = "Thành công";
-                    body.innerText = successMsg;
-                    header.classList.add('bg-success', 'text-white');
+                    if (errorMsg) {
+                        title.innerText = "Có lỗi xảy ra";
+                        body.innerText = errorMsg;
+                        header.classList.add('bg-danger', 'text-white');
+                    } else {
+                        title.innerText = "Thành công";
+                        body.innerText = successMsg;
+                        header.classList.add('bg-success', 'text-white');
+                    }
+
+                    var modal = new bootstrap.Modal(modalEl);
+                    modal.show();
                 }
-
-                var modal = new bootstrap.Modal(modalEl);
-                modal.show();
             }
 
             // --- B. Xử lý Màu Avatar Random ---
@@ -181,16 +185,21 @@
                 avatar.style.borderColor = color;
             }
 
-            // --- C. Xử lý Modal Xác nhận (cho các Form xóa/duyệt) ---
+            // --- C. Xử lý Modal Xác nhận (ĐÃ TỐI ƯU) ---
             const confirmModalElement = document.getElementById('confirmationModal');
             if (confirmModalElement) {
                 const confirmModal = new bootstrap.Modal(confirmModalElement);
                 let formToSubmit = null;
 
-                document.querySelectorAll('form[data-confirm="true"]').forEach(form => {
-                    form.addEventListener('submit', function (event) {
-                        event.preventDefault();
-                        formToSubmit = form;
+                // Sử dụng Event Delegation: Lắng nghe sự kiện trên document thay vì loop từng form
+                // Giúp code chạy ổn định hơn ngay cả khi DOM thay đổi
+                document.addEventListener('submit', function (event) {
+                    const form = event.target;
+
+                    // Kiểm tra xem form có thuộc tính data-confirm="true" không
+                    if (form && form.getAttribute('data-confirm') === 'true') {
+                        event.preventDefault(); // Ngăn chặn submit ngay lập tức
+                        formToSubmit = form;    // Lưu lại form đang thao tác
 
                         // Lấy dữ liệu từ data attributes
                         const title = form.getAttribute('data-confirm-title') || 'Xác nhận';
@@ -202,23 +211,32 @@
                         // Fill dữ liệu vào Modal
                         document.getElementById('confirmationModalLabel').innerText = title;
                         document.getElementById('confirmationModalBody').innerText = msg;
-                        document.getElementById('confirmModalActionButtonText').innerText = btnText;
 
-                        // Set style nút và header
                         const confirmBtn = document.getElementById('confirmModalConfirmButton');
+                        confirmBtn.querySelector('span').innerText = btnText; // Cập nhật text trong span
                         confirmBtn.className = 'btn ' + btnClass;
 
-                        const header = document.getElementById('confirmationModal').querySelector('.modal-header');
-                        header.className = 'modal-header ' + headerClass;
+                        const header = confirmModalElement.querySelector('.modal-header');
+                        // Reset class header cũ và thêm class mới
+                        header.className = 'modal-header';
+                        if(headerClass) header.classList.add(...headerClass.split(' '));
 
                         confirmModal.show();
-                    });
+                    }
                 });
 
-                document.getElementById('confirmModalConfirmButton').addEventListener('click', function () {
-                    if (formToSubmit) formToSubmit.submit();
-                    confirmModal.hide();
-                });
+                // Xử lý nút "Xác nhận" trong Modal
+                const confirmBtn = document.getElementById('confirmModalConfirmButton');
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', function () {
+                        if (formToSubmit) {
+                            // Bỏ thuộc tính data-confirm để tránh lặp vô tận khi submit lại
+                            formToSubmit.removeAttribute('data-confirm');
+                            formToSubmit.submit();
+                        }
+                        confirmModal.hide();
+                    });
+                }
             }
         });
     </script>

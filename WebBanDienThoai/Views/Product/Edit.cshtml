@@ -14,7 +14,6 @@
                     <h4 class="mb-0">Chỉnh sửa Sản phẩm (ID: @Model.Product.ProductId)</h4>
                 </div>
 
-                <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
                 <form asp-action="Edit" asp-controller="Product" method="post" enctype="multipart/form-data">
 
                     <input type="hidden" asp-for="Product.ProductId" />
@@ -24,7 +23,6 @@
                     <div class="card-body p-4">
                         <div class="row g-4">
 
-                            <!-- CỘT BÊN TRÁI -->
                             <div class="col-md-7">
                                 <h5 class="mb-3">Thông tin chung</h5>
 
@@ -36,8 +34,7 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Product.BrandId" class="form-label">Hãng sản xuất</label>
-                                    <select asp-for="Product.BrandId" class="form-select"
-                                            asp-items="@Model.BrandList">
+                                    <select asp-for="Product.BrandId" class="form-select" asp-items="@Model.BrandList">
                                         <option value="">-- Chọn hãng --</option>
                                     </select>
                                     <span asp-validation-for="Product.BrandId" class="text-danger"></span>
@@ -65,7 +62,6 @@
 
                             </div>
 
-                            <!-- CỘT BÊN PHẢI -->
                             <div class="col-md-5">
                                 <h5 class="mb-3">Thông số kỹ thuật</h5>
 
@@ -86,7 +82,8 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Product.ScreenSize" class="form-label">Kích thước màn hình (inch)</label>
-                                    <input asp-for="Product.ScreenSize" type="number" step="0.1" class="form-control" />
+                                    <input asp-for="Product.ScreenSize" type="number" step="0.01" class="form-control no-spinner" min="0" />
+                                    <span asp-validation-for="Product.ScreenSize" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
@@ -96,12 +93,14 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Product.RefreshRate" class="form-label">Tần số quét (Hz)</label>
-                                    <input asp-for="Product.RefreshRate" type="number" class="form-control" />
+                                    <input asp-for="Product.RefreshRate" type="number" class="form-control no-spinner" min="0" />
+                                    <span asp-validation-for="Product.RefreshRate" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
                                     <label asp-for="Product.BatteryCapacity" class="form-label">Dung lượng Pin (mAh)</label>
-                                    <input asp-for="Product.BatteryCapacity" type="number" class="form-control" />
+                                    <input asp-for="Product.BatteryCapacity" type="number" class="form-control no-spinner" min="0" />
+                                    <span asp-validation-for="Product.BatteryCapacity" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
@@ -116,7 +115,8 @@
 
                                 <div class="mb-3">
                                     <label asp-for="Product.Weight" class="form-label">Trọng lượng (gram)</label>
-                                    <input asp-for="Product.Weight" type="number" step="0.1" class="form-control" />
+                                    <input asp-for="Product.Weight" type="number" step="0.01" class="form-control no-spinner" min="0" />
+                                    <span asp-validation-for="Product.Weight" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">
@@ -144,7 +144,6 @@
                     </div>
 
                     <div class="card-footer bg-light text-end py-3">
-                        <!-- GHI CHÚ: Đã sửa asp-controller="Product" -->
                         <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Hủy bỏ</a>
                         <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                     </div>
@@ -154,3 +153,78 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy tất cả input number có class no-spinner
+            const numberInputs = document.querySelectorAll('input[type="number"].no-spinner');
+
+            numberInputs.forEach(input => {
+                // 1. Chặn nhập ký tự e, +, -
+                input.addEventListener('keydown', function(e) {
+                    if (['e', 'E', '+', '-'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+
+                // 2. Kiểm tra khi paste dữ liệu
+                input.addEventListener('paste', function(e) {
+                    const pasteData = e.clipboardData.getData('text');
+                    if (pasteData && (pasteData.includes('-') || pasteData.includes('+') || isNaN(pasteData))) {
+                        e.preventDefault();
+                        showToast('error', 'Vui lòng chỉ nhập số dương!');
+                    }
+                });
+
+                // 3. Kiểm tra khi rời khỏi ô nhập (blur)
+                input.addEventListener('blur', function() {
+                    if (this.value && parseFloat(this.value) < 0) {
+                        this.value = Math.abs(parseFloat(this.value)); // Tự động chuyển thành số dương
+                        showToast('warning', 'Đã tự động sửa thành số dương.');
+                    }
+                });
+            });
+        });
+
+        // Hàm hiển thị thông báo nhỏ
+        function showToast(type, message) {
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'warning'} border-0 show`;
+            toast.role = 'alert';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+
+            // Tự xóa sau 3s
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function createToastContainer() {
+            const div = document.createElement('div');
+            div.id = 'toast-container';
+            div.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            div.style.zIndex = '1100';
+            document.body.appendChild(div);
+            return div;
+        }
+    </script>
+}
+
+<style>
+    /* Ẩn nút tăng giảm mặc định của trình duyệt */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield; /* Firefox */
+    }
+</style>

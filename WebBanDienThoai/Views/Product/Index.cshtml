@@ -136,7 +136,7 @@
                                     <a href="@Url.Action("Edit", "Product", new { id = item.ProductId })" title="Sửa sản phẩm">
                                         <img src="/images/Admin/Product/edit.png" alt="Edit">
                                     </a>
-                                    <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.ProductId" method="post"
+                                   @*  <form asp-action="Delete" asp-controller="Product" asp-route-id="@item.ProductId" method="post"
                                           data-confirm="true"
                                           data-confirm-title="Xác nhận Xóa Sản phẩm"
                                           data-confirm-message="Bạn có chắc chắn muốn XÓA TOÀN BỘ sản phẩm '@item.Name' và các biến thể của nó không? Hành động này không thể hoàn tác."
@@ -147,7 +147,7 @@
                                         <button type="submit" class="btn-delete" title="Xóa sản phẩm">
                                             <img src="/images/Admin/Product/delete.png" alt="Delete">
                                         </button>
-                                    </form>
+                                    </form> *@
                                 </div>
                             </td>
                         </tr>

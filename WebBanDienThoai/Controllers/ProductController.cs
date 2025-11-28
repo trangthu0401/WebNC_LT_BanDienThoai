@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -120,7 +121,7 @@ namespace WebBanDienThoai.Controllers
             }
         }
 
-        // --- CÁC ACTION KHÁC GIỮ NGUYÊN ---
+        // --- CREATE: THÊM SẢN PHẨM MỚI ---
         public async Task<IActionResult> Create()
         {
             var viewModel = new ProductCreateViewModel
@@ -137,21 +138,104 @@ namespace WebBanDienThoai.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
+            // 🔥 RÀNG BUỘC SỐ DƯƠNG TRƯỚC KHI KIỂM TRA ModelState
+            if (viewModel.VariantPrice <= 0)
+            {
+                ModelState.AddModelError("VariantPrice", "Giá sản phẩm phải lớn hơn 0.");
+            }
+
+            if (viewModel.VariantStock < 0)
+            {
+                ModelState.AddModelError("VariantStock", "Tồn kho không được âm.");
+            }
+
+            if (viewModel.Product.BatteryCapacity.HasValue && viewModel.Product.BatteryCapacity <= 0)
+            {
+                ModelState.AddModelError("Product.BatteryCapacity", "Dung lượng pin phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.ScreenSize.HasValue && viewModel.Product.ScreenSize <= 0)
+            {
+                ModelState.AddModelError("Product.ScreenSize", "Kích thước màn hình phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.Weight.HasValue && viewModel.Product.Weight <= 0)
+            {
+                ModelState.AddModelError("Product.Weight", "Trọng lượng phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.RefreshRate.HasValue && viewModel.Product.RefreshRate <= 0)
+            {
+                ModelState.AddModelError("Product.RefreshRate", "Tần số quét phải lớn hơn 0.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     string? mainImagePath = null;
-                    if (viewModel.MainImageFile != null) mainImagePath = await UploadFile(viewModel.MainImageFile);
+                    if (viewModel.MainImageFile != null)
+                    {
+                        // 🔥 RÀNG BUỘC FILE ẢNH
+                        if (viewModel.MainImageFile.Length == 0)
+                        {
+                            ModelState.AddModelError("MainImageFile", "File ảnh không được trống.");
+                            viewModel.BrandList = await GetBrandListAsync();
+                            return View(viewModel);
+                        }
+
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                        var fileExtension = Path.GetExtension(viewModel.MainImageFile.FileName).ToLower();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("MainImageFile", "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp).");
+                            viewModel.BrandList = await GetBrandListAsync();
+                            return View(viewModel);
+                        }
+
+                        mainImagePath = await UploadFile(viewModel.MainImageFile);
+                    }
 
                     string? variantImagePath = null;
-                    if (viewModel.VariantImageFile != null) variantImagePath = await UploadFile(viewModel.VariantImageFile);
+                    if (viewModel.VariantImageFile != null)
+                    {
+                        // 🔥 RÀNG BUỘC FILE ẢNH BIẾN THỂ
+                        if (viewModel.VariantImageFile.Length == 0)
+                        {
+                            ModelState.AddModelError("VariantImageFile", "File ảnh biến thể không được trống.");
+                            viewModel.BrandList = await GetBrandListAsync();
+                            return View(viewModel);
+                        }
+
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                        var fileExtension = Path.GetExtension(viewModel.VariantImageFile.FileName).ToLower();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("VariantImageFile", "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp).");
+                            viewModel.BrandList = await GetBrandListAsync();
+                            return View(viewModel);
+                        }
+
+                        variantImagePath = await UploadFile(viewModel.VariantImageFile);
+                    }
+
+                    // 🔥 XỬ LÝ "GB" CHO STORAGE VÀ RAM
+                    string processedStorage = ProcessStorageRamValue(viewModel.VariantStorage);
+                    string processedRam = ProcessStorageRamValue(viewModel.VariantRam);
 
                     // 1. Lưu Product
                     Product newProduct = viewModel.Product!;
                     newProduct.CreatedDate = DateTime.Now;
                     newProduct.IsActive = true;
                     newProduct.MainImage = mainImagePath;
+
+                    // 🔥 RÀNG BUỘC NGÀY PHÁT HÀNH KHÔNG Ở TƯƠNG LAI
+                    if (newProduct.ReleaseDate > DateTime.Now)
+                    {
+                        ModelState.AddModelError("Product.ReleaseDate", "Ngày phát hành không được ở tương lai.");
+                        viewModel.BrandList = await GetBrandListAsync();
+                        return View(viewModel);
+                    }
 
                     _context.Products.Add(newProduct);
                     await _context.SaveChangesAsync();
@@ -160,9 +244,9 @@ namespace WebBanDienThoai.Controllers
                     var newVariant = new ProductVariant
                     {
                         ProductId = newProduct.ProductId,
-                        Color = viewModel.VariantColor,
-                        Storage = viewModel.VariantStorage,
-                        RAM = viewModel.VariantRam,
+                        Color = viewModel.VariantColor?.Trim() ?? string.Empty,
+                        Storage = processedStorage,
+                        RAM = processedRam,
                         Price = viewModel.VariantPrice,
                         Stock = viewModel.VariantStock,
                         ImageUrl = variantImagePath ?? mainImagePath,
@@ -182,12 +266,11 @@ namespace WebBanDienThoai.Controllers
                 }
             }
 
-            viewModel.BrandList = await _context.Brands.OrderBy(b => b.BrandName)
-                                            .Select(b => new SelectListItem { Value = b.BrandId.ToString(), Text = b.BrandName })
-                                            .ToListAsync();
+            viewModel.BrandList = await GetBrandListAsync();
             return View(viewModel);
         }
 
+        // --- EDIT: SỬA SẢN PHẨM ---
         public async Task<IActionResult> Edit(int id)
         {
             var product = await _context.Products.FindAsync(id);
@@ -196,9 +279,7 @@ namespace WebBanDienThoai.Controllers
             var viewModel = new ProductEditViewModel
             {
                 Product = product,
-                BrandList = await _context.Brands.OrderBy(b => b.BrandName)
-                                          .Select(b => new SelectListItem { Value = b.BrandId.ToString(), Text = b.BrandName })
-                                          .ToListAsync()
+                BrandList = await GetBrandListAsync()
             };
             return View(viewModel);
         }
@@ -208,6 +289,29 @@ namespace WebBanDienThoai.Controllers
         public async Task<IActionResult> Edit(int id, ProductEditViewModel viewModel)
         {
             if (id != viewModel.Product.ProductId) return NotFound();
+
+            // 🔥 RÀNG BUỘC SỐ DƯƠNG CHO EDIT
+            if (viewModel.Product.BatteryCapacity.HasValue && viewModel.Product.BatteryCapacity <= 0)
+            {
+                ModelState.AddModelError("Product.BatteryCapacity", "Dung lượng pin phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.ScreenSize.HasValue && viewModel.Product.ScreenSize <= 0)
+            {
+                ModelState.AddModelError("Product.ScreenSize", "Kích thước màn hình phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.Weight.HasValue && viewModel.Product.Weight <= 0)
+            {
+                ModelState.AddModelError("Product.Weight", "Trọng lượng phải lớn hơn 0.");
+            }
+
+            if (viewModel.Product.RefreshRate.HasValue && viewModel.Product.RefreshRate <= 0)
+            {
+                ModelState.AddModelError("Product.RefreshRate", "Tần số quét phải lớn hơn 0.");
+            }
+
+            // Cho phép không có file ảnh mới (giữ ảnh cũ)
             ModelState.Remove("MainImageFile");
 
             if (ModelState.IsValid)
@@ -218,7 +322,28 @@ namespace WebBanDienThoai.Controllers
                     if (productFromDb == null) return NotFound();
 
                     string? mainImagePath = productFromDb.MainImage;
-                    if (viewModel.MainImageFile != null) mainImagePath = await UploadFile(viewModel.MainImageFile);
+                    if (viewModel.MainImageFile != null && viewModel.MainImageFile.Length > 0)
+                    {
+                        // 🔥 RÀNG BUỘC FILE ẢNH CHO EDIT
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                        var fileExtension = Path.GetExtension(viewModel.MainImageFile.FileName).ToLower();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("MainImageFile", "Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp).");
+                            viewModel.BrandList = await GetBrandListAsync();
+                            return View(viewModel);
+                        }
+
+                        mainImagePath = await UploadFile(viewModel.MainImageFile);
+                    }
+
+                    // 🔥 RÀNG BUỘC NGÀY PHÁT HÀNH KHÔNG Ở TƯƠNG LAI
+                    if (viewModel.Product.ReleaseDate > DateTime.Now)
+                    {
+                        ModelState.AddModelError("Product.ReleaseDate", "Ngày phát hành không được ở tương lai.");
+                        viewModel.BrandList = await GetBrandListAsync();
+                        return View(viewModel);
+                    }
 
                     viewModel.Product.MainImage = mainImagePath;
                     viewModel.Product.CreatedDate = productFromDb.CreatedDate;
@@ -236,9 +361,7 @@ namespace WebBanDienThoai.Controllers
                 }
             }
 
-            viewModel.BrandList = await _context.Brands.OrderBy(b => b.BrandName)
-                                            .Select(b => new SelectListItem { Value = b.BrandId.ToString(), Text = b.BrandName })
-                                            .ToListAsync();
+            viewModel.BrandList = await GetBrandListAsync();
             return View(viewModel);
         }
 
@@ -246,14 +369,82 @@ namespace WebBanDienThoai.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _context.Products.Include(p => p.ProductVariants).FirstOrDefaultAsync(p => p.ProductId == id);
+            var product = await _context.Products
+                .Include(p => p.ProductVariants)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (product != null)
             {
-                if (product.ProductVariants != null) _context.ProductVariants.RemoveRange(product.ProductVariants);
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-                TempData["StatusMessage"] = "Đã xóa sản phẩm.";
+                try
+                {
+                    // 🔥 FIX: Sửa lỗi LINQ translation - Kiểm tra ràng buộc đúng cách
+                    // Lấy danh sách VariantIds của sản phẩm
+                    var variantIds = product.ProductVariants.Select(pv => pv.VariantId).ToList();
+
+                    // Kiểm tra xem có OrderDetails nào liên quan đến các biến thể này không
+                    bool hasOrders = await _context.OrderDetails
+                        .AnyAsync(od => variantIds.Contains(od.VariantId));
+
+                    if (hasOrders)
+                    {
+                        TempData["errorMessage"] = "Không thể xóa sản phẩm vì đã có đơn hàng liên quan. Vui lòng ẩn sản phẩm thay vì xóa.";
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    // 🔥 FIX: Kiểm tra thêm các ràng buộc khác
+                    bool hasCartItems = await _context.CartItems
+                        .AnyAsync(ci => variantIds.Contains(ci.VariantId));
+
+                    bool hasReviewDetails = await _context.ReviewDetails
+                        .AnyAsync(rd => variantIds.Contains(rd.VariantId));
+
+                    bool hasFavoriteDetails = await _context.FavoriteDetails
+                        .AnyAsync(fd => variantIds.Contains(fd.VariantId));
+
+                    if (hasCartItems || hasReviewDetails || hasFavoriteDetails)
+                    {
+                        var constraints = new List<string>();
+                        if (hasCartItems) constraints.Add("giỏ hàng");
+                        if (hasReviewDetails) constraints.Add("đánh giá");
+                        if (hasFavoriteDetails) constraints.Add("danh sách yêu thích");
+
+                        TempData["errorMessage"] = $"Không thể xóa sản phẩm vì đang được sử dụng trong: {string.Join(", ", constraints)}. Vui lòng ẩn sản phẩm thay vì xóa.";
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    // Nếu không có ràng buộc, thực hiện xóa
+                    if (product.ProductVariants != null)
+                        _context.ProductVariants.RemoveRange(product.ProductVariants);
+
+                    _context.Products.Remove(product);
+                    await _context.SaveChangesAsync();
+
+                    TempData["StatusMessage"] = "Đã xóa sản phẩm thành công.";
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    // Xử lý lỗi chi tiết hơn
+                    var baseException = dbEx.GetBaseException() as SqlException;
+
+                    if (baseException != null && baseException.Number == 547)
+                    {
+                        TempData["errorMessage"] = "Không thể xóa sản phẩm do có dữ liệu liên quan (đơn hàng, giỏ hàng, đánh giá, yêu thích). Vui lòng ẩn sản phẩm thay vì xóa.";
+                    }
+                    else
+                    {
+                        TempData["errorMessage"] = "Lỗi cơ sở dữ liệu khi xóa sản phẩm.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["errorMessage"] = $"Lỗi không xác định khi xóa sản phẩm: {ex.Message}";
+                }
             }
+            else
+            {
+                TempData["errorMessage"] = "Không tìm thấy sản phẩm để xóa.";
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -271,7 +462,7 @@ namespace WebBanDienThoai.Controllers
             {
                 var productCount = await _context.Products.CountAsync();
                 var brandCount = await _context.Brands.CountAsync();
-                return Content($"✅ Database OK! Products: {productCount}, Brands: {brandCount}");
+                return Content($" Database OK! Products: {productCount}, Brands: {brandCount}");
             }
             catch (Exception ex)
             {
@@ -279,12 +470,13 @@ namespace WebBanDienThoai.Controllers
             }
         }
 
+        // --- HÀM HỖ TRỢ PRIVATE ---
         private async Task<string?> UploadFile(IFormFile file)
         {
             string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
             if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
 
-            string fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            string fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
             string filePath = Path.Combine(uploadDir, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -292,6 +484,36 @@ namespace WebBanDienThoai.Controllers
                 await file.CopyToAsync(stream);
             }
             return "/images/products/" + fileName;
+        }
+
+        private async Task<List<SelectListItem>> GetBrandListAsync()
+        {
+            return await _context.Brands
+                .OrderBy(b => b.BrandName)
+                .Select(b => new SelectListItem
+                {
+                    Value = b.BrandId.ToString(),
+                    Text = b.BrandName
+                })
+                .ToListAsync();
+        }
+
+        // 🔥 HÀM XỬ LÝ "GB" CHO STORAGE VÀ RAM
+        private string ProcessStorageRamValue(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            // Loại bỏ "GB" nếu có và trim
+            string cleanedValue = value.Replace("GB", "").Trim();
+
+            // Nếu là số thì thêm "GB"
+            if (int.TryParse(cleanedValue, out int numericValue))
+            {
+                return $"{numericValue}GB";
+            }
+
+            return cleanedValue;
         }
     }
 }
